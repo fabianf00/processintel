@@ -1,5 +1,5 @@
 import itertools
-from components.petri_net import PetriNetToolkit, add_petri_net_to_graph
+from graphs.petri_net import PetriNetToolkit, add_petri_net_to_graph
 from graphs.visualization.genetic_graph import GeneticGraph
 from graphs.cuts import exclusive_cut, parallel_cut, sequence_cut, loop_cut
 from graphs.dfg import DFG

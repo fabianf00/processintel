@@ -5,7 +5,7 @@ import itertools
 
 import numpy as np
 
-from components.petri_net import PetriNetToolkit, add_petri_net_to_graph
+from graphs.petri_net import PetriNetToolkit, add_petri_net_to_graph
 from graphs.visualization.genetic_graph import GeneticGraph
 from logger import get_logger
 from mining_algorithms.base_mining import BaseMining
