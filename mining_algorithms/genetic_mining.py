@@ -448,13 +448,14 @@ class GeneticMining(BaseMining):
 
         node_stats_map = {stat['node']: stat for stat in self.get_node_statistics()}
 
-        start_activities = [a for a in activities if a in self.start_nodes]
-        end_activities = [a for a in activities if a in self.end_nodes]
+        start_nodes, end_nodes = self._get_individual_boundaries(individual)
+        start_activities = [a for a in activities if a in start_nodes]
+        end_activities = [a for a in activities if a in end_nodes]
 
         self.logger.debug(f"Start activities: {start_activities}")
         self.logger.debug(f"End activities: {end_activities}")
 
-        petri_net = self.petri_toolkit.build_from_genetic_individual(individual, self.start_nodes)
+        petri_net = self.petri_toolkit.build_from_genetic_individual(individual, start_nodes)
         self.logger.debug(f"Petri net structure: {petri_net}")
         individual['_petri_net'] = petri_net
         self.petri_net = petri_net
@@ -597,13 +598,14 @@ class GeneticMining(BaseMining):
 
     def _parse_trace_token_game(self, individual, trace):
 
+        start_nodes, _ = self._get_individual_boundaries(individual)
         petri_net = individual.get('_petri_net')
         
         if petri_net is None:
-            petri_net = self.petri_toolkit.build_from_genetic_individual(individual, self.start_nodes)
+            petri_net = self.petri_toolkit.build_from_genetic_individual(individual, start_nodes)
             individual['_petri_net'] = petri_net
 
-        parsed_count, is_completed = self.petri_toolkit.simulate_trace(petri_net,trace, getattr(self, 'start_nodes', set()),)
+        parsed_count, is_completed = self.petri_toolkit.simulate_trace(petri_net,trace,start_nodes,)
         
         return parsed_count, is_completed
     
@@ -933,6 +935,28 @@ class GeneticMining(BaseMining):
 
         # rebuild C from O
         self._rebuild_causal_relations(individual)
+    
+    @staticmethod
+    def _get_individual_boundaries(individual):
+        """
+        Determine start and end nodes based on the individual's I/O sets.
+        Returns Sets of start and end activities for the individual.
+        """
+        inputs = individual.get('I') or {}
+        outputs = individual.get('O') or {}
+        start_nodes = set()
+        end_nodes = set()
+
+        for act in individual.get('activities', []):
+            input_sets = inputs.get(act) or []
+            if not input_sets or any(not subset for subset in input_sets):
+                start_nodes.add(act)
+
+            output_sets = outputs.get(act) or []
+            if not output_sets or any(not subset for subset in output_sets):
+                end_nodes.add(act)
+
+        return start_nodes, end_nodes
 
     @staticmethod
     def _rebuild_causal_relations(individual):
