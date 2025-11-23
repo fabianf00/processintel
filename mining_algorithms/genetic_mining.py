@@ -604,8 +604,10 @@ class GeneticMining(BaseMining):
         if petri_net is None:
             petri_net = self.petri_toolkit.build_from_genetic_individual(individual, start_nodes)
             individual['_petri_net'] = petri_net
+        else:
+            self.petri_toolkit.load_net(petri_net)
 
-        parsed_count, is_completed = self.petri_toolkit.simulate_trace(petri_net,trace,start_nodes,)
+        parsed_count, is_completed = self.petri_toolkit.simulate_trace(trace,start_nodes,)
         
         return parsed_count, is_completed
     

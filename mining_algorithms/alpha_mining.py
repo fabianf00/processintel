@@ -442,7 +442,7 @@ class AlphaMining(BaseMining):
         
         # Register all transitions (visible activities) in the Petri net
         for node, node_id in normalized_nodes.items():
-            toolkit.register_transition(net, node_id, visible=True, label=str(node))
+            toolkit.register_transition(node_id, visible=True, label=str(node))
             
         # Counter to create unique place IDs
         place_counter = itertools.count()
@@ -463,11 +463,11 @@ class AlphaMining(BaseMining):
             
             # Create a new place representing the relation
             place_id = f"p_alpha_{next(place_counter)}"
-            toolkit.register_place(net, place_id)
+            toolkit.register_place(place_id)
             
              # Connect all valid sources to this place
             for src in valid_sources:
-                toolkit.add_arc(net, normalized_nodes[src], place_id)
+                toolkit.add_arc(normalized_nodes[src], place_id)
             
             # Connect this place to all valid targets (B)
             for dst in valid_targets:
@@ -481,10 +481,10 @@ class AlphaMining(BaseMining):
                 continue
             # If transition has no input places, connect it to start place
             if not transition['inputs']:
-                toolkit.add_arc(net, start_place, node_id)
+                toolkit.add_arc(start_place, node_id)
             # If transition has no output places, connect it to end place
             if not transition['outputs']:
-                toolkit.add_arc(net, node_id, end_place)
+                toolkit.add_arc(node_id, end_place)
 
         # Finalize the net structure
         toolkit.finalize_net(net)

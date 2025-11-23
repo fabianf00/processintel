@@ -9,6 +9,24 @@ class PetriNetToolkit:
         self.start_label = start_label
         self.end_label = end_label
         self.logger = get_logger("PetriNetToolkit")
+        self.net: dict | None = None
+
+    def load_net(self, net: dict | None) -> dict:
+        """Assign an externally created Petri net to this toolkit."""
+        if net is None:
+            raise ValueError("Cannot load an empty Petri net.")
+        self.net = net
+        return self.net
+
+    def get_current_net(self) -> dict | None:
+        """Return the currently loaded Petri net."""
+        return self.net
+
+    def _require_net(self) -> dict:
+        """Return the currently loaded net or raise Error if none."""
+        if self.net is None:
+            raise RuntimeError("No Petri net is loaded. ")
+        return self.net
 
     def create_base_net(self) -> tuple[dict, str, str]:
         """Create a fresh Petri net dictionary including boundary places and metadata containers."""
@@ -25,12 +43,13 @@ class PetriNetToolkit:
             'forced_silent': set(), # Identify silent transitions whose outputs are invisible
             'transition_labels': {}, # mapping transition_id -> display label
         }
+        self.net = net
         # Define start and end places
         start_place = "p_start"
         end_place = "p_end"
         # Register start and end places
-        self.register_place(net, start_place)
-        self.register_place(net, end_place)
+        self.register_place(start_place)
+        self.register_place(end_place)
         
         net['initial_marking'][start_place] = 1
         
@@ -43,11 +62,13 @@ class PetriNetToolkit:
         net['arcs'].add((end_place, self.end_label))
         return net, start_place, end_place
 
-    def register_place(self, net: dict, place_id: str) -> None:
+    def register_place(self, place_id: str) -> None:
         """Ensure that the place exists inside the Petri net."""
+        net = self._require_net()
         net['places'].add(place_id)
 
-    def register_transition(self, net: dict, transition_id: str, visible: bool, label: str | None = None) -> None:
+    def register_transition(self, transition_id: str, visible: bool, label: str | None = None) -> None:
+        net = self._require_net()
         transition = net['transitions'].setdefault(
             transition_id,
             {'inputs': set(), 'outputs': set(), 'visible': visible}
@@ -58,7 +79,8 @@ class PetriNetToolkit:
         if label is not None:
             net.setdefault('transition_labels', {})[transition_id] = label
 
-    def add_arc(self, net: dict, source: str, target: str) -> None:
+    def add_arc(self, source: str, target: str) -> None:
+        net = self._require_net()
         net['arcs'].add((source, target))
         transition = net['transitions'].get(source)
         if transition is not None:
@@ -69,7 +91,6 @@ class PetriNetToolkit:
 
     def ensure_input_place(
         self,
-        net: dict,
         act: str,
         pred: str,
         pred_to_input_place: dict,
@@ -80,6 +101,7 @@ class PetriNetToolkit:
         """Ensure that an input place for (pred -> act) exists and return the corresponding ID.
         Creates a new one if necessary.
         """
+        net = self._require_net()
         subset = subset or set()
         base = f"pi_{act}"
         if suffix:
@@ -89,8 +111,8 @@ class PetriNetToolkit:
         place_id = base
 
         if place_id not in net['places']:
-            self.register_place(net, place_id)
-            self.add_arc(net, place_id, act)
+            self.register_place(place_id)
+            self.add_arc(place_id, act)
             activity_input_places.setdefault(act, set()).add(place_id)
 
         # Map subset for later
@@ -105,7 +127,7 @@ class PetriNetToolkit:
         
         # Register all visible activities as transitions
         for act in individual['activities']:
-            self.register_transition(net, act, visible=True, label=str(act))
+            self.register_transition(act, visible=True, label=str(act))
 
         # Initialize helper structures for mapping input/output connections
         pred_to_input_place: dict[tuple[str, str], str] = {}
@@ -123,7 +145,6 @@ class PetriNetToolkit:
             if not subsets:
                 net['empty_input_activities'].add(act)
                 self.ensure_input_place(
-                    net,
                     act,
                     "Start",
                     pred_to_input_place,
@@ -138,7 +159,6 @@ class PetriNetToolkit:
                     # Empty input subset (start candidate)
                     net['empty_input_activities'].add(act)
                     self.ensure_input_place(
-                        net,
                         act,
                         "Start",
                         pred_to_input_place,
@@ -150,8 +170,8 @@ class PetriNetToolkit:
                 # Normal input subset: create corresponding input place
                 place_id = f"pi_{act}_{idx}_{'-'.join(sorted(subset))}"
                 if place_id not in net['places']:
-                    self.register_place(net, place_id)
-                    self.add_arc(net, place_id, act)
+                    self.register_place(place_id)
+                    self.add_arc(place_id, act)
                     activity_input_places.setdefault(act, set()).add(place_id)
 
                 # Store mapping for later lookups
@@ -170,13 +190,13 @@ class PetriNetToolkit:
             # Case 1: No output sets -> connect to end place
             if not out_sets:
                 place_id = f"po_{act}_sink"
-                self.register_place(net, place_id)
-                self.add_arc(net, act, place_id)
+                self.register_place(place_id)
+                self.add_arc(act, place_id)
 
                 tau_id = f"tau_{next(tau_counter)}"
-                self.register_transition(net, tau_id, visible=False)
-                self.add_arc(net, place_id, tau_id)
-                self.add_arc(net, tau_id, end_place)
+                self.register_transition(tau_id, visible=False)
+                self.add_arc(place_id, tau_id)
+                self.add_arc(tau_id, end_place)
                 continue
             
             # Case 2: Iterate over each output subset
@@ -184,27 +204,26 @@ class PetriNetToolkit:
                 if not out_set:
                     # Empty output set -> sink transition to end
                     place_id = f"po_{act}_sink_{idx}"
-                    self.register_place(net, place_id)
-                    self.add_arc(net, act, place_id)
+                    self.register_place(place_id)
+                    self.add_arc(act, place_id)
 
                     tau_id = f"tau_{next(tau_counter)}"
-                    self.register_transition(net, tau_id, visible=False)
-                    self.add_arc(net, place_id, tau_id)
-                    self.add_arc(net, tau_id, end_place)
+                    self.register_transition(tau_id, visible=False)
+                    self.add_arc(place_id, tau_id)
+                    self.add_arc(tau_id, end_place)
                     continue
                 
                 # Normal output subset -> connect to successor input places
                 place_id = f"po_{act}_{idx}_{'-'.join(sorted(out_set))}"
                 if place_id not in net['places']:
-                    self.register_place(net, place_id)
-                self.add_arc(net, act, place_id)
+                    self.register_place(place_id)
+                self.add_arc(act, place_id)
 
                 for succ in out_set:
                     # Find the input place for successor or create it if needed
                     target_place = pred_to_input_place.get((act, succ))
                     if target_place is None:
                         target_place = self.ensure_input_place(
-                            net,
                             succ,
                             act,
                             pred_to_input_place,
@@ -214,9 +233,9 @@ class PetriNetToolkit:
 
                     # Create invisible τ-transition between po_place and pi_place
                     tau_id = f"tau_{next(tau_counter)}"
-                    self.register_transition(net, tau_id, visible=False)
-                    self.add_arc(net, place_id, tau_id)
-                    self.add_arc(net, tau_id, target_place)
+                    self.register_transition(tau_id, visible=False)
+                    self.add_arc(place_id, tau_id)
+                    self.add_arc(tau_id, target_place)
 
         # Connect Start place to true start activities
         for act in individual['activities']:
@@ -225,7 +244,6 @@ class PetriNetToolkit:
             
             # Ensure a valid input place for the starting activity
             target_place = self.ensure_input_place(
-                net,
                 act,
                 "Start",
                 pred_to_input_place,
@@ -243,15 +261,17 @@ class PetriNetToolkit:
 
             # Create τ from start_place → activity input place
             tau_id = f"tau_{next(tau_counter)}"
-            self.register_transition(net, tau_id, visible=False)
-            self.add_arc(net, start_place, tau_id)
-            self.add_arc(net, tau_id, target_place)
+            self.register_transition(tau_id, visible=False)
+            self.add_arc(start_place, tau_id)
+            self.add_arc(tau_id, target_place)
 
         self.finalize_net(net)
         return net
 
-    def finalize_net(self, net: dict) -> None:
+    def finalize_net(self, net: dict | None = None) -> dict:
         """Populate helper mappings for silent transitions and forced firing."""
+        if net is None:
+            net = self._require_net()
         
         # Postprocessing:
         # Map each output place to silent transitions that follow it
@@ -281,8 +301,11 @@ class PetriNetToolkit:
                     forced_silent.add(trans_id)
         net['forced_silent'] = forced_silent
 
-    def simulate_trace(self, net: dict, trace: Sequence[str], start_events: set[str]) -> tuple[int, bool]:
-        """Token-game simulation for a trace on the provided Petri net."""
+        return net
+
+    def simulate_trace(self, trace: Sequence[str], start_events: set[str]) -> tuple[int, bool]:
+        """Token-game simulation for a trace on the currently loaded Petri net."""
+        net = self._require_net()
         transitions = net['transitions']
         places = net['places']
 
