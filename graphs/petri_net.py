@@ -42,6 +42,7 @@ class PetriNetToolkit:
             'output_to_silent': {}, # Map each output place to silent transitions that follow it
             'forced_silent': set(), # Identify silent transitions whose outputs are invisible
             'transition_labels': {}, # mapping transition_id -> display label
+            'gateway_nodes': {}, # metadata for visualizing logical gateways
         }
         self.net = net
         # Define start and end places
@@ -78,6 +79,14 @@ class PetriNetToolkit:
             label = transition_id
         if label is not None:
             net.setdefault('transition_labels', {})[transition_id] = label
+
+    def register_gateway(self, node_id: str, gateway_type: str, role: str) -> None:
+        """Store visualization metadata for gateway-like nodes (e.g., XOR/AND split or join)."""
+        net = self._require_net()
+        net.setdefault('gateway_nodes', {})[node_id] = {
+            'type': gateway_type,
+            'role': role,
+        }
 
     def add_arc(self, source: str, target: str) -> None:
         net = self._require_net()
@@ -502,18 +511,49 @@ def add_petri_net_to_graph(
     node_stats_map: dict[str, dict],
     frequency_map: dict[str, int],
     logger=None,
+    gateway_info: dict | None = None,
 ) -> None:
-    """Populate a visualization graph with the contents of a Petri net."""
+    """Populate a visualization graph with the contents of a Petri net.
+
+    The optional ``gateway_info`` map allows attaching metadata (e.g. XOR/AND split or join)
+    """
     logger = logger or get_logger("PetriNetToolkit")
     created_edges = set()
     labels = petri_net.get('transition_labels', {})
     allowed_labels = set(visible_labels) if visible_labels is not None else None
+    gateway_info = gateway_info or petri_net.get('gateway_nodes') or {}
+
+    # Expose gateway metadata to the visualization graph for richer tooltips
+    graph.gateway_info = gateway_info
+
+
+    def _gateway_payload(node_id: str) -> tuple[str | None, dict | None, dict]:
+        meta = gateway_info.get(node_id) or {}
+        if not meta:
+            return None, None, {}
+        gtype = meta.get('type', '').lower()
+        role = meta.get('role', '')
+        label = None
+        attrs = {}
+        data = {}
+        if gtype == 'xor':
+            label = "X"
+            attrs["fillcolor"] = "#81E325"
+            data["Gateway"] = "Exclusive (XOR)"
+        elif gtype in ('and', 'par', 'parallel'):
+            label = "+"
+            attrs["fillcolor"] = "#E6F4FF"
+            data["Gateway"] = "Parallel (AND)"
+        if role:
+            data["Role"] = str(role).capitalize()
+        return label, data or None, attrs
 
     for transition_id, data in petri_net['transitions'].items():
         label = labels.get(transition_id, transition_id)
         if not data.get('visible', False):
             if not graph.contains_node(transition_id):
-                graph.add_silent_transition(transition_id)
+                gw_label, gw_data, gw_attrs = _gateway_payload(transition_id)
+                graph.add_silent_transition(transition_id, label=gw_label or "silent", data=gw_data, **gw_attrs)
             continue
 
         if allowed_labels is not None and label not in allowed_labels:
@@ -532,11 +572,16 @@ def add_petri_net_to_graph(
         if data.get('visible', False):
             continue
         if not graph.contains_node(transition_id):
-            graph.add_silent_transition(transition_id)
+            gw_label, gw_data, gw_attrs = _gateway_payload(transition_id)
+            graph.add_silent_transition(transition_id, label=gw_label or "silent", data=gw_data, **gw_attrs)
 
     for place_id in petri_net['places']:
         if not graph.contains_node(place_id):
-            graph.add_place(place_id)
+            gw_label, gw_data, gw_attrs = _gateway_payload(place_id)
+            if gw_label:
+                graph.add_place(place_id, label=gw_label, data=gw_data, **gw_attrs)
+            else:
+                graph.add_place(place_id)
 
     for source, target in petri_net['arcs']:
         _safe_create_edge(graph, source, target, created_edges, logger)

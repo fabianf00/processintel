@@ -9,6 +9,7 @@ class PetriNetGraph(BaseGraph):
     def __init__(self) -> None:
         super().__init__(rankdir="LR")
         self.adjacency = {}
+        self.gateway_info: dict[str, dict] = {}
 
     def add_event(
             self,
@@ -64,7 +65,7 @@ class PetriNetGraph(BaseGraph):
         edge_data = {key: str(value) if isinstance(value, (int, float)) else value for key, value in edge_data.items()}
         super().add_edge(source, destination, weight, data=edge_data)
 
-    def add_place(self, place_id: str) -> None:
+    def add_place(self, place_id: str, label: str = " ", data: dict | None = None, **node_attributes) -> None:
         """Add a place node to the graph.
 
         Parameters
@@ -72,20 +73,43 @@ class PetriNetGraph(BaseGraph):
         place_id : str
             ID for the place node
         """
+        node_attributes.setdefault("shape", "circle")
+        node_attributes.setdefault("style", "filled")
+        node_attributes.setdefault("fillcolor", "#E1E1E1")
         super().add_node(
             id=place_id,
-            label=" ",
-            shape="circle",
-            style="filled",
-            fillcolor="#E1E1E1",
+            label=label,
+            data=data,
+            **node_attributes,
         )
 
-    def add_silent_transition(self, transition_id: str) -> None:
+    def add_silent_transition(self, transition_id: str, label: str = "silent", data: dict | None = None,
+                              **node_attributes) -> None:
         """Add a silent (tau) transition to the graph."""
+        node_attributes.setdefault("shape", "box")
+        node_attributes.setdefault("style", "filled")
+        node_attributes.setdefault("fillcolor", "#EDEDED")
         super().add_node(
             id=transition_id,
-            label="silent",
-            shape="box",
-            style="filled",
-            fillcolor="#EDEDED",
+            label=label,
+            data=data,
+            **node_attributes,
         )
+
+    def node_to_string(self, id: str) -> tuple[str, str]:
+        """Return a minimal description for nodes, simplifying gateway output."""
+        gateway = self.gateway_info.get(id, {})
+        if gateway:
+            gateway_type = gateway.get("type", "").lower()
+            title = "Gateway"
+            description = ""
+
+            if gateway_type == "xor":
+                title = "Exclusive Gateway"
+                description = "Exclusive Gateway\n\nThe Exclusive Gateway represents a decision point in the process flow."
+            elif gateway_type in ("and", "par", "parallel"):
+                title = "Parallel Gateway"
+                description = "Parallel Gateway\n\nThe Parallel Gateway represents synchronization in the process flow."
+            return title, description
+
+        return super().node_to_string(id)

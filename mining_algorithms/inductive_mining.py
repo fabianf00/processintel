@@ -186,10 +186,23 @@ class InductiveMining(BaseMining):
             if op == 'xor':
                 entry = entry_override or new_place('xor_in')
                 exit_place = exit_override or new_place('xor_out')
-                
-                 # Each branch shares the same entry/exit to avoid stacked silent transitions
+
+               
+                split_id = new_tau('xor_split')
+                join_id = new_tau('xor_join')
+
+                toolkit.register_transition(split_id, visible=False)
+                toolkit.register_gateway(split_id, 'xor', 'split')
+                toolkit.register_transition(join_id, visible=False)
+                toolkit.register_gateway(join_id, 'xor', 'join')
+
+                toolkit.add_arc(entry, split_id)
+                toolkit.add_arc(join_id, exit_place)
+
                 for child in children:
-                    build_fragment(child, entry, exit_place)
+                    child_entry, child_exit = build_fragment(child)
+                    toolkit.add_arc(split_id, child_entry)
+                    toolkit.add_arc(child_exit, join_id)
                 return entry, exit_place
 
             if op == 'par':   # Parallel (AND)
@@ -200,7 +213,9 @@ class InductiveMining(BaseMining):
                 join_id = new_tau('par_join')
                 
                 toolkit.register_transition(split_id, visible=False)
+                toolkit.register_gateway(split_id, 'and', 'split')
                 toolkit.register_transition(join_id, visible=False)
+                toolkit.register_gateway(join_id, 'and', 'join')
                 toolkit.add_arc(entry, split_id)
                 toolkit.add_arc(join_id, exit_place)
                 
