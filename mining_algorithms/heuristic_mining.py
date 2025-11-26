@@ -1,6 +1,6 @@
 import numpy as np
 
-from graphs.visualization.heuristic_graph import HeuristicGraph
+from graphs.visualization import DirectlyFollowsGraph
 from logger import get_logger
 from mining_algorithms.base_mining import BaseMining
 
@@ -19,7 +19,7 @@ class HeuristicMining(BaseMining):
     def generate_graph(
             self, spm_threshold, node_freq_threshold_normalized, node_freq_threshold_absolute,
             edge_freq_threshold_normalized, edge_freq_threshold_absolute, dependency_threshold):
-        self.graph = HeuristicGraph()
+        self.graph = DirectlyFollowsGraph(rankdir="TB")
 
         self.start_nodes = self._get_start_nodes()
         self.end_nodes = self._get_end_nodes()

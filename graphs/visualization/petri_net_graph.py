@@ -1,11 +1,12 @@
 from graphs.visualization.base_graph import BaseGraph
 
 
-class AlphaGraph(BaseGraph):
-    """A class to represent an AlphaGraph."""
+class PetriNetGraph(BaseGraph):
+    """
+    Graph representation for Petri net visualizations.
+    """
 
     def __init__(self) -> None:
-        """Initialize the AlphaGraph object."""
         super().__init__(rankdir="LR")
         self.adjacency = {}
 
@@ -60,22 +61,31 @@ class AlphaGraph(BaseGraph):
             additional data for the edge
         """
         self.adjacency.setdefault(source, []).append(destination)
-        # Convert numerical attributes to strings if necessary
         edge_data = {key: str(value) if isinstance(value, (int, float)) else value for key, value in edge_data.items()}
-        super().add_edge(source, destination, weight, **edge_data)
+        super().add_edge(source, destination, weight, data=edge_data)
 
-    def add_empty_circle(self, circle_id: str) -> None:
-        """Add an empty circle node to the graph.
+    def add_place(self, place_id: str) -> None:
+        """Add a place node to the graph.
 
         Parameters
         ----------
-        circle_id : str
-            ID for the circle node
+        place_id : str
+            ID for the place node
         """
         super().add_node(
-            id=circle_id,
+            id=place_id,
             label=" ",
             shape="circle",
             style="filled",
             fillcolor="#E1E1E1",
+        )
+
+    def add_silent_transition(self, transition_id: str) -> None:
+        """Add a silent (tau) transition to the graph."""
+        super().add_node(
+            id=transition_id,
+            label="silent",
+            shape="box",
+            style="filled",
+            fillcolor="#EDEDED",
         )

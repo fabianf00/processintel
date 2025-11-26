@@ -3,8 +3,8 @@ from collections import deque
 
 import pandas as pd
 
+from graphs.visualization import PetriNetGraph
 from graphs.visualization.base_graph import BaseGraph
-from graphs.visualization.genetic_graph import GeneticGraph
 from logger import get_logger
 from mining_algorithms.genetic_mining import GeneticMining
 from transformations.dataframe_transformations import DataframeTransformations
@@ -81,7 +81,7 @@ class TestGeneticMining(unittest.TestCase):
 
     def test_generate_graph_empty_events(self):
         self.gm.generate_graph(1.0, 0, 0, 100, 200, 0.8, 0.1, 0.2, 5, 1, 0.9)
-        self.assertIsInstance(self.gm.graph, GeneticGraph)
+        self.assertIsInstance(self.gm.graph, PetriNetGraph)
         self.assertTrue(self.gm.graph.contains_node("Start"))
         self.assertTrue(self.gm.graph.contains_node("End"))
 

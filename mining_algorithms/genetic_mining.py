@@ -5,8 +5,8 @@ import itertools
 
 import numpy as np
 
+from graphs.visualization import PetriNetGraph
 from graphs.petri_net import PetriNetToolkit, add_petri_net_to_graph
-from graphs.visualization.genetic_graph import GeneticGraph
 from logger import get_logger
 from mining_algorithms.base_mining import BaseMining
 
@@ -126,7 +126,7 @@ class GeneticMining(BaseMining):
         self.recalculate_model_filters()
 
         if not self.filtered_events:
-            self.graph = GeneticGraph()
+            self.graph = PetriNetGraph()
             self.graph.add_start_node()
             self.graph.add_end_node()
             self.graph.create_edge("Start", "End")
@@ -433,7 +433,7 @@ class GeneticMining(BaseMining):
             Updates `self.graph` with visualization.
         """
         self.logger.debug("[Graph] Generating graph from best individual...")
-        self.graph = GeneticGraph()
+        self.graph = PetriNetGraph()
         self.graph.add_start_node()
         self.graph.add_end_node()
 

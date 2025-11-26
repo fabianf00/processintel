@@ -1,4 +1,3 @@
-import streamlit as st
 from mining_algorithms.alpha_mining import AlphaMining
 from ui.alpha_miner_ui.alpha_miner_view import AlphaMinerView
 from ui.base_algorithm_ui.base_algorithm_controller import BaseAlgorithmController
@@ -25,7 +24,6 @@ class AlphaMinerController(BaseAlgorithmController):
         if mining_model_class is None:
             mining_model_class = AlphaMining
 
-        self.use_petri_net = False
         super().__init__(views, mining_model_class, dataframe_transformations)
 
     def get_page_title(self) -> str:
@@ -43,9 +41,6 @@ class AlphaMinerController(BaseAlgorithmController):
         Calls the base implementation for shared filters and initializes additional Alpha Miner-specific parameters.
         """
         super().process_algorithm_parameters()
-        if "alpha_use_petri_net" not in st.session_state:
-            st.session_state.alpha_use_petri_net = self.use_petri_net
-        self.use_petri_net = st.session_state.alpha_use_petri_net
 
     def have_parameters_changed(self) -> bool:
         """Checks if the algorithm parameters have changed.
@@ -55,10 +50,7 @@ class AlphaMinerController(BaseAlgorithmController):
         bool
             True if any of the algorithm parameters have changed, False otherwise.
         """
-        return (
-                super().have_parameters_changed()
-                or getattr(self.mining_model, 'use_petri_net', False) != self.use_petri_net
-        )
+        return super().have_parameters_changed()
     
 
     def get_sidebar_values(self) -> dict[str, tuple[float, float]]:
@@ -74,4 +66,4 @@ class AlphaMinerController(BaseAlgorithmController):
 
     def perform_mining(self) -> None:
         """Performs the mining of the Alpha Miner algorithm using the current filter parameters."""
-        super().perform_mining(use_petri_net=self.use_petri_net)
+        super().perform_mining()

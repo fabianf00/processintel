@@ -1,12 +1,14 @@
 from graphs.visualization.base_graph import BaseGraph
 
 
-class InductiveGraph(BaseGraph):
-    """A class to represent a InductiveGraph."""
+class BPMNGraph(BaseGraph):
+    """
+    Graph representation for BPMN-style transitions and activities.
+    """
 
     def __init__(
             self,
-            process_tree,
+            process_tree=None,
             frequency: dict[str, int] = None,
             node_sizes: dict[str, tuple[float, float]] = None,
             node_stats_map: dict[str, dict] = None,
@@ -30,11 +32,12 @@ class InductiveGraph(BaseGraph):
         self.exclusive_gates_count = 0
         self.parallel_gates_count = 0
         self.silent_activities_count = 0
-        self.event_frequency = frequency
-        self.node_sizes = node_sizes
+        self.event_frequency = frequency or {}
+        self.node_sizes = node_sizes or {}
         self.node_stats_map = node_stats_map or {}
 
-        self.build_graph(process_tree)
+        if process_tree:
+            self.build_graph(process_tree)
 
     def build_graph(self, process_tree) -> None:
         """Build the graph from the process tree.
@@ -105,19 +108,18 @@ class InductiveGraph(BaseGraph):
         tuple
             a tuple containing the start and end node of the section
         """
+        
         start_node, end_node = None, None
 
-        if isinstance(process_tree, str) or isinstance(process_tree, int):
+        if isinstance(process_tree, (str, int)):
             if process_tree == "tau":
                 silent_activity_id = self.add_silent_activity()
                 start_node, end_node = silent_activity_id, silent_activity_id
             else:
                 title = str(process_tree)
-
                 stat = self.node_stats_map.get(title, {})
                 spm = stat.get("spm", 0.0)
                 freq = stat.get("frequency", 0.0)
-
                 self.add_event(
                     title=title,
                     spm=spm,
@@ -187,7 +189,6 @@ class InductiveGraph(BaseGraph):
 
         for section in process_tree:
             start, end = self.add_section(section)
-
             self.add_edge(start_node, start, weight=None)
             self.add_edge(end, end_node, weight=None)
 
@@ -247,11 +248,9 @@ class InductiveGraph(BaseGraph):
 
         if type.lower() == "xor":
             return self.add_exclusive_gate(**node_attributes)
-
-        elif type.lower() == "par":
+        if type.lower() == "par":
             return self.add_parallel_gate(**node_attributes)
-        else:
-            raise ValueError(f"Gate type {type} is not supported")
+        raise ValueError(f"Gate type {type} is not supported")
 
     def add_exclusive_gate(self, **node_attributes) -> tuple[str, str]:
         """Add an exclusive gate to the graph.
@@ -355,16 +354,15 @@ class InductiveGraph(BaseGraph):
                 title = "Exclusive Start Gate"
             elif "end" in id:
                 title = "Exclusive End Gate"
-
-            description = f"""**Exclusive Gateway**\nThe Exclusive Gateway is used to represent a decision point in the process flow."""
+            description = "**Exclusive Gateway**\nThe Exclusive Gateway represents a decision point in the process flow."
         elif "parallel" in id:
             if "start" in id:
                 title = "Parallel Start Gate"
             elif "end" in id:
                 title = "Parallel End Gate"
-            description = f"""**Parallel Gateway**\nThe Parallel Gateway is used to represent a synchronization point in the process flow."""
+            description = "**Parallel Gateway**\nThe Parallel Gateway represents synchronization in the process flow."
         elif "silent" in id:
             title = "Silent Activity"
-            description = f"""**Silent Activity**\nA silent activity is an activity that does not have any effect on the process flow. It is used to represent a transition in the process flow without any actual work being done."""
+            description = "**Silent Activity**\nRepresents an invisible transition in the process flow."
 
         return title, description

@@ -1,9 +1,8 @@
 import itertools
-from graphs.petri_net import PetriNetToolkit, add_petri_net_to_graph
-from graphs.visualization.genetic_graph import GeneticGraph
+from graphs.visualization import BPMNGraph, PetriNetGraph
 from graphs.cuts import exclusive_cut, parallel_cut, sequence_cut, loop_cut
 from graphs.dfg import DFG
-from graphs.visualization.inductive_graph import InductiveGraph
+from graphs.petri_net import PetriNetToolkit, add_petri_net_to_graph
 from logger import get_logger
 from logs.filters import filter_traces
 from logs.splits import (
@@ -64,12 +63,12 @@ class InductiveMining(BaseMining):
 
         if not self.filtered_events:
             if use_petri_net:
-                self.graph = GeneticGraph()
+                self.graph = PetriNetGraph()
                 self.graph.add_start_node()
                 self.graph.add_end_node()
                 self.graph.create_edge("Start", "End")
             else:
-                self.graph = InductiveGraph(self.filtered_events)
+                self.graph = BPMNGraph(self.filtered_events)
                 self.graph.add_edge("Start", "End", None)
             return
 
@@ -92,7 +91,7 @@ class InductiveMining(BaseMining):
             self._render_inductive_petri_net(process_tree, node_stats_map)
             return
         
-        self.graph = InductiveGraph(
+        self.graph = BPMNGraph(
             process_tree,
             frequency=self.filtered_appearance_freqs,
             node_sizes=self.node_sizes,
@@ -103,7 +102,7 @@ class InductiveMining(BaseMining):
         # Build Petri net from inductive process tree
         petri_net = self._build_inductive_petri_net(process_tree)
         self.petri_net = petri_net
-        self.graph = GeneticGraph()
+        self.graph = PetriNetGraph()
         self.graph.add_start_node()
         self.graph.add_end_node()
         add_petri_net_to_graph(

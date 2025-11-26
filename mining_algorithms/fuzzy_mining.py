@@ -1,6 +1,6 @@
 import numpy as np
 
-from graphs.visualization.fuzzy_graph import FuzzyGraph
+from graphs.visualization import DirectlyFollowsGraph
 from logger import get_logger
 from mining_algorithms.base_mining import BaseMining
 
@@ -51,7 +51,7 @@ class FuzzyMining(BaseMining):
 
         self.recalculate_model_filters()
 
-        self.graph = FuzzyGraph()
+        self.graph = DirectlyFollowsGraph(rankdir="TB")
 
         if not self.filtered_events:
             self.graph.add_start_node()
@@ -402,13 +402,24 @@ class FuzzyMining(BaseMining):
                     continue
 
                 self.graph.create_edge(
-                    current_cluster, next_cluster, edge_thickness, norm_freq, abs_freq, correlation=value,
-                    significance=significance_val
+                    current_cluster,
+                    next_cluster,
+                    size=edge_thickness,
+                    normalized_frequency=norm_freq,
+                    absolute_frequency=abs_freq,
+                    correlation=value,
+                    significance=significance_val,
                 )
             else:
                 self.graph.create_edge(
-                    current_cluster_id, next_cluster_id, edge_thickness, norm_freq, abs_freq, "red", correlation=value,
-                    significance=significance_val
+                    current_cluster_id,
+                    next_cluster_id,
+                    size=edge_thickness,
+                    normalized_frequency=norm_freq,
+                    absolute_frequency=abs_freq,
+                    color="red",
+                    correlation=value,
+                    significance=significance_val,
                 )
 
     def __aggregate_edge_values(
@@ -685,7 +696,14 @@ class FuzzyMining(BaseMining):
                 spm = stats.get("spm", 0.0)
                 norm_frequency = stats.get("frequency", 0.0)
                 abs_frequency = self.filtered_appearance_freqs.get(node, 0)
-                self.graph.add_event(node, spm, norm_frequency, abs_frequency, (w, h))
+                self.graph.add_event(
+                    node,
+                    spm,
+                    norm_frequency,
+                    abs_frequency,
+                    (w, h),
+                    style="filled",
+                )
 
     def __convert_clustered_nodes_to_list(self, clustered_nodes):
         ret_nodes = []
