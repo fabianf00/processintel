@@ -93,6 +93,8 @@ class GeneticMining(BaseMining):
         fitness_threshold : float
             Minimum fitness value at which the heuristic individual creation stops early.
         """
+        if population_size < 3:
+            raise ValueError("Population size must be at least 3 for the genetic algorithm.")
         run_id = str(uuid.uuid4())
 
         with GeneticMining._global_lock:

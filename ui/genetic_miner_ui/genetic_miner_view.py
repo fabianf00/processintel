@@ -13,7 +13,7 @@ class GeneticMinerView(BaseAlgorithmView):
         with st.expander("⚙️ **Settings:**", expanded=True):
             st.number_input(
                 label="Population Size",
-                min_value=1,
+                min_value=3,
                 step=1,
                 key="population_size",
                 help="Number of candidate models (individuals) in each generation. Larger populations improve diversity and search coverage, but increase runtime cost.",
@@ -59,7 +59,7 @@ class GeneticMinerView(BaseAlgorithmView):
                 help="Number of candidates competing in each tournament selection. Larger sizes increase selection pressure (favoring fitter individuals), smaller sizes maintain diversity.",
             )
 
-            st.slider(
+            number_input_slider(
                 label="Power Value",
                 min_value=sidebar_values["power_value"][0],
                 max_value=sidebar_values["power_value"][1],

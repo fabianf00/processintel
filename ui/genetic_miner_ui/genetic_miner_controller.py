@@ -169,6 +169,9 @@ class GeneticMinerController(BaseAlgorithmController):
                 st.warning(
                     "Do not change the parameters while mining. This will cause an error. Wait until the mining is finished."
                 )
+            except Exception as ex:
+                self.logger.exception(ex)
+                st.error("Genetic Mining could not be started. Please use a population size of at least 3 or review your parameters.")
         view.display_sidebar(self.get_sidebar_values())
         if self.mining_model.get_graph() is None:
             st.info(

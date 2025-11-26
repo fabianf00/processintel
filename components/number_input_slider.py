@@ -46,6 +46,7 @@ def number_input_slider(
             label=label,
             min_value=min_value,
             max_value=max_value,
+            step=step,
             key=key,
             help=help,
         )
@@ -56,6 +57,7 @@ def number_input_slider(
             min_value=min_value,
             max_value=max_value,
             value=st.session_state[key] if key in st.session_state else value,
+            step=step,
             key=f"{key}_text_input",
             on_change=set_session_state,
             args=(key, f"{key}_text_input"),
