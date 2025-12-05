@@ -87,7 +87,12 @@ class GeneticMinerController(BaseAlgorithmController):
         self.mutation_rate = st.session_state.mutation_rate
         self.elitism_rate = st.session_state.elitism_rate
         self.tournament_size = st.session_state.tournament_size
-        self.power_value = st.session_state.power_value
+        # if even even number -> increase by one to get odd number
+        raw_power = int(st.session_state.power_value)
+        if raw_power % 2 == 0:
+            raw_power += 1
+        st.session_state.power_value = raw_power
+        self.power_value = raw_power
         self.fitness_threshold = st.session_state.fitness_threshold
 
     def have_parameters_changed(self) -> bool:
