@@ -696,6 +696,7 @@ class FuzzyMining(BaseMining):
                 spm = stats.get("spm", 0.0)
                 norm_frequency = stats.get("frequency", 0.0)
                 abs_frequency = self.filtered_appearance_freqs.get(node, 0)
+                unary_sig = float(self.significance_of_nodes.get(node, 0.0))
                 self.graph.add_event(
                     node,
                     spm,
@@ -703,6 +704,7 @@ class FuzzyMining(BaseMining):
                     abs_frequency,
                     (w, h),
                     style="filled",
+                    **{"Unary Significance *(normalized)*": unary_sig},
                 )
 
     def __convert_clustered_nodes_to_list(self, clustered_nodes):
