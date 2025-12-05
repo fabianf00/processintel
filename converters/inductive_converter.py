@@ -80,22 +80,21 @@ class InductiveGraphConverter:
             if op == "xor":
                 entry = entry_override or new_place("xor_in")
                 exit_place = exit_override or new_place("xor_out")
-
-                split_id = new_tau("xor_split")
                 join_id = new_tau("xor_join")
-
-                toolkit.register_transition(split_id, visible=False)
-                toolkit.register_gateway(split_id, "xor", "split")
                 toolkit.register_transition(join_id, visible=False)
-                toolkit.register_gateway(join_id, "xor", "join")
-
-                toolkit.add_arc(entry, split_id)
-                toolkit.add_arc(join_id, exit_place)
+                
+                # XOR marker on the place where branches split/join
+                toolkit.register_gateway(entry, "xor", "split")
+                toolkit.register_gateway(exit_place, "xor", "join")
 
                 for child in children:
                     child_entry, child_exit = build_fragment(child)
-                    toolkit.add_arc(split_id, child_entry)
+                    branch_id = new_tau("xor_branch")
+                    toolkit.register_transition(branch_id, visible=False)
+                    toolkit.add_arc(entry, branch_id)
+                    toolkit.add_arc(branch_id, child_entry)
                     toolkit.add_arc(child_exit, join_id)
+                toolkit.add_arc(join_id, exit_place)
                 return entry, exit_place
 
             if op == "par":  # Parallel (AND)
@@ -106,17 +105,19 @@ class InductiveGraphConverter:
                 join_id = new_tau("par_join")
 
                 toolkit.register_transition(split_id, visible=False)
-                toolkit.register_gateway(split_id, "and", "split")
                 toolkit.register_transition(join_id, visible=False)
-                toolkit.register_gateway(join_id, "and", "join")
                 toolkit.add_arc(entry, split_id)
                 toolkit.add_arc(join_id, exit_place)
 
                 # Each parallel branch connects to split and join
                 for child in children:
                     child_entry, child_exit = build_fragment(child)
+                    # Mark first place of each AND branch
+                    toolkit.register_gateway(child_entry, "and", "split")
                     toolkit.add_arc(split_id, child_entry)
                     toolkit.add_arc(child_exit, join_id)
+                    # Mark last place before join
+                    toolkit.register_gateway(child_exit, "and", "join")
                 return entry, exit_place
 
             if op == "loop":
