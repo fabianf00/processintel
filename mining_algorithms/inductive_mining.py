@@ -1,7 +1,6 @@
-from graphs.visualization import BPMNGraph, PetriNetGraph
 from graphs.cuts import exclusive_cut, parallel_cut, sequence_cut, loop_cut
 from graphs.dfg import DFG
-from graphs.petri_net import PetriNetToolkit, add_petri_net_to_graph
+from graphs.petri_net import PetriNetToolkit
 from logger import get_logger
 from logs.filters import filter_traces
 from logs.splits import (
@@ -11,7 +10,8 @@ from logs.splits import (
     loop_split,
 )
 from mining_algorithms.base_mining import BaseMining
-from converters.inductive_converter import InductiveGraphConverter
+from converters.bpmn_converter import BPMNConverter, InductiveBPMNData
+from converters.petri_net_converter import InductivePetriNetData, PetriNetConverter
 
 
 class InductiveMining(BaseMining):
@@ -27,12 +27,13 @@ class InductiveMining(BaseMining):
         """
         super().__init__(log)
         self.logger = get_logger("InductiveMining")
-        self.graph_converter = InductiveGraphConverter()
         self.traces_threshold = 0.2
         self.filtered_log = None
         self.use_petri_net = False
         self.petri_toolkit = PetriNetToolkit()
         self.petri_net = None
+        self.petri_converter = PetriNetConverter(self.petri_toolkit)
+        self.bpmn_converter = BPMNConverter()
 
     def generate_graph(self, spm_threshold: float, node_freq_threshold_normalized: float,
                        node_freq_threshold_absolute: int, traces_threshold: float, use_petri_net: bool = False):
@@ -64,13 +65,16 @@ class InductiveMining(BaseMining):
 
         if not self.filtered_events:
             if use_petri_net:
-                self.graph = PetriNetGraph()
-                self.graph.add_start_node()
-                self.graph.add_end_node()
-                self.graph.create_edge("Start", "End")
+                self.graph = self.petri_converter.build_empty_graph()
             else:
-                self.graph = BPMNGraph(self.filtered_events)
-                self.graph.add_edge("Start", "End", None)
+                empty_data = InductiveBPMNData(
+                    process_tree=None,
+                    filtered_events=self.filtered_events,
+                    filtered_appearance_freqs=self.filtered_appearance_freqs,
+                    node_sizes={},
+                    node_stats_map={},
+                )
+                self.graph = self.bpmn_converter.build_inductive_graph(empty_data)
             return
 
         self.node_sizes = {k: self.calculate_node_size(k) for k in self.filtered_events}
@@ -88,16 +92,25 @@ class InductiveMining(BaseMining):
         process_tree = self.inductive_mining(self.filtered_log)
         node_stats_map = {stat["node"]: stat for stat in self.get_node_statistics()}
         
-        if use_petri_net:
-            self.graph = self.graph_converter.bpmn_to_petri_net(self, process_tree, node_stats_map)
-            return
-        
-        self.graph = BPMNGraph(
-            process_tree,
-            frequency=self.filtered_appearance_freqs,
+        bpmn_data = InductiveBPMNData(
+            process_tree=process_tree,
+            filtered_events=self.filtered_events,
+            filtered_appearance_freqs=self.filtered_appearance_freqs,
             node_sizes=self.node_sizes,
             node_stats_map=node_stats_map,
         )
+
+        if use_petri_net:
+            petri_data = InductivePetriNetData(
+                process_tree=process_tree,
+                filtered_events=self.filtered_events,
+                filtered_appearance_freqs=self.filtered_appearance_freqs,
+                node_stats_map=node_stats_map,
+            )
+            self.graph, self.petri_net = self.petri_converter.build_inductive_graph(petri_data, logger=self.logger)
+            return
+
+        self.graph = self.bpmn_converter.build_inductive_graph(bpmn_data)
      
     def inductive_mining(self, log):
         """Generate a process tree from the log using the Inductive Mining algorithm.

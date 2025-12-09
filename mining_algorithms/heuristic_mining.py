@@ -1,6 +1,6 @@
 import numpy as np
 
-from graphs.visualization import DirectlyFollowsGraph
+from converters.dfg_converter import DFGConverter, HeuristicDFGData
 from logger import get_logger
 from mining_algorithms.base_mining import BaseMining
 
@@ -11,6 +11,7 @@ class HeuristicMining(BaseMining):
         self.logger = get_logger("HeuristicMining")
 
         self.dependency_matrix = {}
+        self.graph_converter = DFGConverter()
 
         # Graph modifiers
         self.dependency_threshold = 0.5
@@ -19,8 +20,6 @@ class HeuristicMining(BaseMining):
     def generate_graph(
             self, spm_threshold, node_freq_threshold_normalized, node_freq_threshold_absolute,
             edge_freq_threshold_normalized, edge_freq_threshold_absolute, dependency_threshold):
-        self.graph = DirectlyFollowsGraph(rankdir="TB")
-
         self.start_nodes = self._get_start_nodes()
         self.end_nodes = self._get_end_nodes()
 
@@ -38,83 +37,31 @@ class HeuristicMining(BaseMining):
 
         node_stats_map = {stat["node"]: stat for stat in self.get_node_statistics()}
 
-        self.graph.add_start_node()
-        self.graph.add_end_node()
-
         if not self.filtered_events:
-            self.graph.create_edge(
-                source=str("Start"),
-                destination=str("End"),
-                size=0.1,
-            )
+            self.graph = self.graph_converter.build_empty_graph(rankdir="TB")
             return
+        
+        node_sizes = {node: self.calculate_node_size(node) for node in self.filtered_events}
+        edge_stats = self.get_edge_statistics()
+        edge_stats_map = {(edge["source"], edge["target"]): edge for edge in edge_stats}
 
-        # add nodes to graph
-        for node in self.filtered_events:
-            w, h = self.calculate_node_size(node)
-            stat = node_stats_map.get(node, {})
-            spm = stat.get("spm", 0.0)
-            norm_freq = stat.get("frequency", 0.0)
-            abs_freq = self.filtered_appearance_freqs.get(node, 0)
+        data = HeuristicDFGData(
+            dependency_graph=dependency_graph,
+            dependency_matrix=self.dependency_matrix,
+            filtered_events=list(self.filtered_events),
+            filtered_appearance_freqs=self.filtered_appearance_freqs,
+            node_sizes=node_sizes,
+            start_nodes=set(self.start_nodes),
+            end_nodes=set(self.end_nodes),
+            node_stats_map=node_stats_map,
+            edge_stats_map=edge_stats_map,
+            min_edge_thickness=self.min_edge_thickness,
+            edge_scale_factor=self.get_edge_scale_factor,
+            get_sources=self.__get_sources_from_dependency_graph,
+            get_sinks=self.__get_sinks_from_dependency_graph,
+        )
 
-            self.graph.add_event(
-                title=node,
-                spm=spm,
-                normalized_frequency=norm_freq,
-                absolute_frequency=abs_freq,
-                size=(w, h)
-            )
-
-        # add edges to graph
-        for i in range(len(self.filtered_events)):
-            column_total = 0.0
-            row_total = 0.0
-            for j in range(len(self.filtered_events)):
-                column_total = column_total + dependency_graph[i][j]
-                row_total = row_total + dependency_graph[j][i]
-                source = self.filtered_events[i]
-                target = self.filtered_events[j]
-
-                edge_stats = self.get_edge_statistics()
-                edge_stats_map = {(edge["source"], edge["target"]): edge for edge in edge_stats}
-
-                if dependency_graph[i][j] == 1.:
-                    norm_frequency = edge_stats_map.get((source, target), {}).get("normalized_frequency", 0.0)
-                    abs_frequency = edge_stats_map.get((source, target), {}).get("absolute_frequency", 0)
-                    edge_thickness = (self.get_edge_scale_factor(i, j) + self.min_edge_thickness)
-                    dependency_score = float(self.dependency_matrix[i][j])
-
-                    self.graph.create_edge(
-                        source=source,
-                        destination=target,
-                        size=edge_thickness,
-                        normalized_frequency=norm_frequency,
-                        absolute_frequency=abs_frequency,
-                        dependency_score=dependency_score
-                    )
-
-                if j == len(self.filtered_events) - 1 and column_total == 0 and \
-                        self.filtered_events[i] not in self.end_nodes:
-                    self.end_nodes.add(self.filtered_events[i])
-                if j == len(self.filtered_events) - 1 and row_total == 0 and \
-                        self.filtered_events[i] not in self.start_nodes:
-                    self.start_nodes.add(self.filtered_events[i])
-
-        # add starting and ending edges from the log to the graph. Only if they are filtered
-        self.graph.add_starting_edges(self.start_nodes.intersection(self.filtered_events))
-        self.graph.add_ending_edges(self.end_nodes.intersection(self.filtered_events))
-
-        # get filtered sources and sinks from the dependency graph
-        source_nodes = self.__get_sources_from_dependency_graph(
-            dependency_graph
-        ).intersection(self.filtered_events)
-        sink_nodes = self.__get_sinks_from_dependency_graph(
-            dependency_graph
-        ).intersection(self.filtered_events)
-
-        # add starting and ending edges from the dependency graph to the graph
-        self.graph.add_starting_edges(source_nodes - self.start_nodes)
-        self.graph.add_ending_edges(sink_nodes - self.end_nodes)
+        self.graph, self.start_nodes, self.end_nodes = self.graph_converter.build_heuristic_graph(data)
 
     def get_threshold(self):
         return self.dependency_threshold

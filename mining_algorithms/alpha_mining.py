@@ -1,6 +1,6 @@
 import itertools
 
-from graphs.visualization import PetriNetGraph
+from converters.petri_net_converter import AlphaPetriNetData, PetriNetConverter
 from graphs.petri_net import PetriNetToolkit, add_petri_net_to_graph
 from logger import get_logger
 from mining_algorithms.base_mining import BaseMining
@@ -12,6 +12,7 @@ class AlphaMining(BaseMining):
         self.logger = get_logger("AlphaMining")
         self.petri_toolkit = PetriNetToolkit()
         self.petri_net = None
+        self.graph_converter = PetriNetConverter(self.petri_toolkit)
 
         self._calculate_filtered_model_state()
 
@@ -89,9 +90,6 @@ class AlphaMining(BaseMining):
 
     # Step 6
     def generate_graph(self, spm_threshold, node_freq_threshold_normalized, node_freq_threshold_absolute):
-        self.graph = PetriNetGraph()
-        self.graph.add_start_node()
-        self.graph.add_end_node()
 
         self.spm_threshold = spm_threshold
         self.node_freq_threshold_normalized = node_freq_threshold_normalized
@@ -100,7 +98,7 @@ class AlphaMining(BaseMining):
         self.recalculate_model_filters()
 
         if not self.filtered_events:
-            self.graph.create_edge("Start", "End")
+            self.graph = self.graph_converter.build_empty_graph()
             self.petri_net = None
             return
 
@@ -115,75 +113,24 @@ class AlphaMining(BaseMining):
         if not nodes_to_draw:
             nodes_to_draw = set(self.filtered_events)
 
-        petri_net, start_place, end_place = self.petri_toolkit.create_base_net()
-        place_counter = itertools.count()
+        data = AlphaPetriNetData(
+            nodes_to_draw=nodes_to_draw,
+            start_nodes=set(self.start_nodes),
+            end_nodes=set(self.end_nodes),
+            yl_set=self.yl_set,
+            filtered_events=self.filtered_events,
+            filtered_appearance_freqs=self.filtered_appearance_freqs,
+            node_stats_map=node_stats_map,
+            edge_filter=self.filter_edge,
+        )
+        self.graph, self.petri_net, extra_start_nodes, extra_end_nodes = self.graph_converter.build_alpha_graph(
+            data,
+            logger=self.logger,
+        )
 
-        for node in nodes_to_draw:
-            node_id = str(node)
-            self.petri_toolkit.register_transition(node_id, visible=True, label=node_id)
-
-        has_incoming = {str(node): False for node in nodes_to_draw}
-        has_outgoing = {str(node): False for node in nodes_to_draw}
-
-        for node in self.start_nodes.intersection(nodes_to_draw):
-            node_id = str(node)
-            self.petri_toolkit.add_arc(start_place, node_id)
-            has_incoming[node_id] = True
-
-        for node in self.end_nodes.intersection(nodes_to_draw):
-            node_id = str(node)
-            self.petri_toolkit.add_arc(node_id, end_place)
-            has_outgoing[node_id] = True
-
-        for _set in self.yl_set:
-            if len(_set) != 2:
-                continue
-
-            A, B = _set
-            valid_sources = [a for a in A if a in nodes_to_draw and any(self.filter_edge(a, b) for b in B)]
-            valid_targets = [b for b in B if b in nodes_to_draw and any(self.filter_edge(a, b) for a in A)]
-
-            if not valid_sources or not valid_targets:
-                continue
-
-            place_id = f"p_alpha_{next(place_counter)}"
-            self.petri_toolkit.register_place(place_id)
-
-            for source in valid_sources:
-                source_id = str(source)
-                self.petri_toolkit.add_arc(source_id, place_id)
-                has_outgoing[source_id] = True
-
-            for target in valid_targets:
-                target_id = str(target)
-                self.petri_toolkit.add_arc(place_id, target_id)
-                has_incoming[target_id] = True
-
-        extra_start_nodes = set()
-        extra_end_nodes = set()
-        for node in nodes_to_draw:
-            node_id = str(node)
-            if not has_incoming.get(node_id):
-                self.petri_toolkit.add_arc(start_place, node_id)
-                extra_start_nodes.add(node)
-            if not has_outgoing.get(node_id):
-                self.petri_toolkit.add_arc(node_id, end_place)
-                extra_end_nodes.add(node)
 
         self.start_nodes.update(extra_start_nodes)
         self.end_nodes.update(extra_end_nodes)
-
-        self.petri_toolkit.finalize_net(petri_net)
-        self.petri_net = petri_net
-
-        add_petri_net_to_graph(
-            self.graph,
-            petri_net,
-            nodes_to_draw,
-            node_stats_map,
-            self.filtered_appearance_freqs,
-            logger=self.logger,
-        )
 
     # ALPHA MINER ALGORITHM IMPLEMENTATION END
     ####################################################################################################################

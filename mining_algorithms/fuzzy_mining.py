@@ -1,6 +1,6 @@
 import numpy as np
 
-from graphs.visualization import DirectlyFollowsGraph
+from converters.dfg_converter import DFGConverter, FuzzyDFGData
 from logger import get_logger
 from mining_algorithms.base_mining import BaseMining
 
@@ -16,6 +16,8 @@ class FuzzyMining(BaseMining):
         self.logger = get_logger("FuzzyMining")
         self.minimum_correlation = None
         self._calculate_filtered_model_state()
+        self.graph_converter = DFGConverter()
+
 
         self.clustered_nodes = None
         self.sign_dict = None
@@ -51,12 +53,8 @@ class FuzzyMining(BaseMining):
 
         self.recalculate_model_filters()
 
-        self.graph = DirectlyFollowsGraph(rankdir="TB")
-
         if not self.filtered_events:
-            self.graph.add_start_node()
-            self.graph.add_end_node()
-            self.graph.create_edge("Start", "End")
+            self.graph = self.graph_converter.build_empty_graph(rankdir="TB")
             return
 
         self._calculate_filtered_model_state()
@@ -137,81 +135,18 @@ class FuzzyMining(BaseMining):
         )
         # print("avg_Significance after clustering: " + str(self.sign_dict))
 
-        # print clustered nodes
-        self.__add_clustered_nodes_to_graph(
-            clustered_nodes_after_sec_rule, self.sign_dict
-        )
-        # normal nodes
-        # normal_nodes_after_sec_rule = self.__calculate_normal_nodes()
-        # what is already clustered is not a normal node
-        self.__add_normal_nodes_to_graph(
-            nodes_after_first_rule, self.list_of_clustered_nodes
-        )
-
         list_of_filtered_edges_as_node = self.__get_as_node_removed_indices(
             list_of_filtered_edges
         )
-
-        self.__add_edges_to_graph(
-            clustered_nodes_after_sec_rule, list_of_filtered_edges_as_node
+        
+        graph_data = FuzzyDFGData(
+            nodes_after_first_rule=nodes_after_first_rule,
+            clustered_nodes_after_sec_rule=clustered_nodes_after_sec_rule,
+            list_of_filtered_edges_as_node=list_of_filtered_edges_as_node,
         )
 
-        # add start and end nodes
-        self.graph.add_start_node()
-        self.graph.add_end_node()
+        self.graph = self.graph_converter.build_fuzzy_graph(self, graph_data)
 
-        # add starting and ending edges from the log, only consider nodes which were not removed from the graph
-        # if nodes are merged to cluster, get the cluster id
-
-        start_nodes = set(
-            map(
-                lambda node: self.get_node_id(node),
-                self.start_nodes.intersection(nodes_after_first_rule),
-            )
-        )
-        end_nodes = set(
-            map(
-                lambda node: self.get_node_id(node),
-                self.end_nodes.intersection(nodes_after_first_rule),
-            )
-        )
-
-        self.logger.debug("Start nodes: " + str(start_nodes))
-        self.logger.debug("End nodes: " + str(end_nodes))
-
-        self.graph.add_starting_edges(start_nodes)
-        self.graph.add_ending_edges(end_nodes)
-
-        nodes = self.graph.get_node_ids()
-        nodes = set(nodes) - set(["Start", "End"])
-
-        # nodes with no incoming edges connected to start node
-        for target in nodes:
-            if self.graph.contains_edge("Start", target):
-                continue
-            is_start_node = True
-            for source in nodes:
-                if target == source:
-                    continue
-                if self.graph.contains_edge(source, target):
-                    is_start_node = False
-                    break
-            if is_start_node:
-                self.graph.add_starting_edges([target])
-
-        # nodes with no outgoing edges connected to end node
-        for source in nodes:
-            if self.graph.contains_edge(source, "End"):
-                continue
-            is_end_node = True
-            for target in nodes:
-                if target == source:
-                    continue
-                if self.graph.contains_edge(source, target):
-                    is_end_node = False
-                    break
-            if is_end_node:
-                self.graph.add_ending_edges([source])
 
     def get_node_id(self, node):
         for key, value in self.cluster_id_mapping.items():

@@ -5,8 +5,8 @@ import itertools
 
 import numpy as np
 
-from graphs.visualization import PetriNetGraph
-from graphs.petri_net import PetriNetToolkit, add_petri_net_to_graph
+from converters.petri_net_converter import GeneticPetriNetData, PetriNetConverter
+from graphs.petri_net import PetriNetToolkit
 from logger import get_logger
 from mining_algorithms.base_mining import BaseMining
 
@@ -56,6 +56,7 @@ class GeneticMining(BaseMining):
         
         self.petri_net = None
         self.petri_toolkit = PetriNetToolkit()
+        self.graph_converter = PetriNetConverter(self.petri_toolkit)
 
 
         self.logger = get_logger("GeneticMining")
@@ -128,10 +129,7 @@ class GeneticMining(BaseMining):
         self.recalculate_model_filters()
 
         if not self.filtered_events:
-            self.graph = PetriNetGraph()
-            self.graph.add_start_node()
-            self.graph.add_end_node()
-            self.graph.create_edge("Start", "End")
+            self.graph = self.graph_converter.build_empty_graph()
             return
 
         self._initialize_dependency_matrix()
@@ -434,45 +432,35 @@ class GeneticMining(BaseMining):
         None
             Updates `self.graph` with visualization.
         """
-        self.logger.debug("[Graph] Generating graph from best individual...")
-        self.graph = PetriNetGraph()
-        self.graph.add_start_node()
-        self.graph.add_end_node()
-
         individual = self.best_individual
         if not individual:
             self.logger.debug("[Graph] Skipped: no valid individual to render.")
             return
-
-        activities, C, I, O = individual['activities'], individual['C'], individual['I'], individual['O']
 
         self._rebuild_causal_relations(individual)
 
         node_stats_map = {stat['node']: stat for stat in self.get_node_statistics()}
 
         start_nodes, end_nodes = self._get_individual_boundaries(individual)
-        start_activities = [a for a in activities if a in start_nodes]
-        end_activities = [a for a in activities if a in end_nodes]
+        start_activities = [a for a in individual['activities'] if a in start_nodes]
+        end_activities = [a for a in individual['activities'] if a in end_nodes]
 
         self.logger.debug(f"Start activities: {start_activities}")
         self.logger.debug(f"End activities: {end_activities}")
 
-        petri_net = self.petri_toolkit.build_from_genetic_individual(individual, start_nodes)
-        self.logger.debug(f"Petri net structure: {petri_net}")
-        individual['_petri_net'] = petri_net
-        self.petri_net = petri_net
-
-        visible_labels = [act for act in activities if act in self.filtered_events]
-
-        add_petri_net_to_graph(
-            self.graph,
-            petri_net,
-            visible_labels,
-            node_stats_map,
-            self.filtered_appearance_freqs,
-            logger=self.logger,
+        data = GeneticPetriNetData(
+            individual=individual,
+            filtered_events=self.filtered_events,
+            filtered_appearance_freqs=self.filtered_appearance_freqs,
+            node_stats_map=node_stats_map,
+            start_nodes=start_nodes,
         )
 
+        self.logger.debug("[Graph] Generating graph from best individual...")
+        self.graph, self.petri_net = self.graph_converter.build_genetic_graph(
+            data,
+            logger=self.logger,
+        )
         self.logger.debug("[Graph] Finished.")
 
     def _create_heuristic_individual(self, activities, power_value):
@@ -604,12 +592,12 @@ class GeneticMining(BaseMining):
         petri_net = individual.get('_petri_net')
         
         if petri_net is None:
-            petri_net = self.petri_toolkit.build_from_genetic_individual(individual, start_nodes)
+            petri_net = self.graph_converter.build_petri_net_for_individual(individual, start_nodes)
             individual['_petri_net'] = petri_net
         else:
             self.petri_toolkit.set_net(petri_net)
 
-        parsed_count, is_completed = self.petri_toolkit.simulate_trace(trace,start_nodes,)
+        parsed_count, is_completed = self.petri_toolkit.simulate_trace(trace, start_nodes,)
         
         return parsed_count, is_completed
     
