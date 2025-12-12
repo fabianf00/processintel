@@ -183,5 +183,7 @@ class GeneticMinerController(BaseAlgorithmController):
                 "Please adjust the **Genetic Mining settings** in the sidebar first, and then start the algorithm, by tuning the **Log Filters**, or by clicking the **Run Genetic Mining** button."
             )
         else:
-            view.display_graph(self.mining_model.get_graph())
+            graph = self.mining_model.get_graph()
+            self._apply_happy_path_highlighting(graph)
+            view.display_graph(graph)
         view.display_export_button(disabled=False)

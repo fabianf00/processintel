@@ -696,3 +696,25 @@ class BaseMining(MiningInterface):
 
         setattr(self, norm_attr, norm_val)
         setattr(self, abs_attr, abs_val)
+
+    # "Happy Path" is defined as the most frequent trace in the original unfiltered log.
+    # UI uses this to highlight the corresponding activities in the mined model.
+
+    def get_happy_path_trace(self) -> tuple[str, ...] | None:
+        """Return the most frequent trace in the original log.
+
+        If multiple traces have the same maximum frequency -> longest trace and then lexical ordering"""
+        
+        if not self.log:
+            return None
+
+        max_frequency = max(self.log.values())
+        most_frequent_traces = [trace for trace, frequency in self.log.items() if frequency == max_frequency]
+
+        #prefer longer traces -> if tied fall back to lexical order.
+        return sorted(most_frequent_traces, key=lambda trace: (-len(trace), trace))[0]
+
+    def get_happy_path_events(self) -> set[str]:
+        """Return the set of activity labels contained in the Happy Path."""
+        trace = self.get_happy_path_trace()
+        return set(trace) if trace else set()

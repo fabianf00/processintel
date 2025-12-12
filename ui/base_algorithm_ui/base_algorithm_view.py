@@ -73,6 +73,15 @@ class BaseAlgorithmView(BaseView):
         # Hook for additional node filters
         self.render_log_filter_extensions(sidebar_values)
 
+        # UI toggle to highlight Happy Path in the model.
+        st.write("### **Highlighting**")
+        st.toggle(
+            "Show Happy Path",
+            key="show_happy_path",
+            value=st.session_state.get("show_happy_path", False),
+            help="Highlights the activities that appear in the most frequent trace of the log.",
+        )
+
     def render_log_filter_extensions(self, sidebar_values: dict[str, any]) -> None:
         """Renders additional node filtering controls.
         Can be overridden by subclasses to add more node filters.

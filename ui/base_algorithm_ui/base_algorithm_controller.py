@@ -237,5 +237,24 @@ class BaseAlgorithmController(BaseController, ABC):
                     "Do not change the parameters while mining. This will cause an error. Wait until the mining is finished."
                 )
         view.display_sidebar(self.get_sidebar_values())
-        view.display_graph(self.mining_model.get_graph())
+
+        graph = self.mining_model.get_graph()
+        self._apply_happy_path_highlighting(graph)
+        view.display_graph(graph)
         view.display_export_button(disabled=False)
+
+    def _apply_happy_path_highlighting(self, graph) -> None:
+        """Apply or clear Happy Path highlighting based on UI toggle."""
+        if graph is None:
+            return
+
+        # Toggle lives in the shared BaseAlgorithmView sidebar.
+        if not st.session_state.get("show_happy_path", False):
+            graph.clear_highlighted_nodes()
+            return
+
+        happy_path_events = set()
+        if hasattr(self.mining_model, "get_happy_path_events"):
+            happy_path_events = self.mining_model.get_happy_path_events()
+
+        graph.highlight_happy_path(happy_path_events)

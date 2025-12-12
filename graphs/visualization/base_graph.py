@@ -164,6 +164,42 @@ class BaseGraph:
 
         self.colon_substitute: str = colon_substitute
 
+        # UI feature: optionally highlight Happy Path
+        # Separate state so one can toggle highlighting without re-mining the whole model.
+        self._highlighted_node_ids: set[str] = set()
+        self._highlight_fillcolor = "#FFE08A"
+        self._highlight_bordercolor = "#D97B00"
+
+    def clear_highlighted_nodes(self) -> None:
+        """Remove all node highlighting."""
+        self._highlighted_node_ids = set()
+
+    def set_highlighted_nodes(self, node_ids: set[str] | list[str]) -> None:
+        """Highlight given node ids if they exist in this graph."""
+        self._highlighted_node_ids = {str(node_id) for node_id in node_ids if self.contains_node(node_id)}
+
+    def highlight_happy_path(self, happy_path_events: set[str] | list[str]) -> None:
+        """Highlight nodes of to the given Happy Path activities.
+
+        Direct match -> highlight nodes whose id equals an activity label.
+        - Fuzzy miner clusters -> highlight cluster nodes if they contain a Happy Path activity."""
+        event_set = {str(event) for event in happy_path_events}
+        highlighted = {event for event in event_set if self.contains_node(event)}
+
+        for node in self.get_nodes():
+            data = node.get_data() or {}
+            merged_nodes = data.get("Nodes")
+            if not merged_nodes:
+                continue
+
+            for merged_node in merged_nodes:
+                merged_id = str(merged_node.get("id", ""))
+                if merged_id in event_set:
+                    highlighted.add(node.get_id())
+                    break
+
+        self._highlighted_node_ids = highlighted
+
     def add_node(
             self,
             id: str | int,
@@ -474,7 +510,34 @@ class BaseGraph:
         str
             The graphviz string of the graph.
         """
-        return self.graph.source
+        source = self.graph.source
+        if not self._highlighted_node_ids:
+            return source
+
+        # Inject "override" node statements before the closing brace.
+        # Graphviz merges attributes for the same node id -> safely updates styling.
+        highlight_lines = []
+        for node_id in sorted(self._highlighted_node_ids):
+            graphviz_node_id = self.substitiute_colons(str(node_id))
+
+            # Quote/escape the id so the injected DOT stays valid even if node ids contain special characters.
+            escaped_node_id = graphviz_node_id.replace("\\", "\\\\").replace('"', '\\"')
+            highlight_lines.append(
+                f'\t"{escaped_node_id}" '
+                f'[fillcolor="{self._highlight_fillcolor}", color="{self._highlight_bordercolor}", penwidth="2"];'
+            )
+
+        closing_brace_index = source.rfind("}")
+        if closing_brace_index == -1:
+            return source + "\n" + "\n".join(highlight_lines)
+
+        return (
+            source[:closing_brace_index]
+            + "\n"
+            + "\n".join(highlight_lines)
+            + "\n"
+            + source[closing_brace_index:]
+        )
 
     def get_graphviz_graph(self) -> graphviz.Digraph:
         """Returns the graphviz graph of the graph.
