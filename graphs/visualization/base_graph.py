@@ -174,10 +174,7 @@ class BaseGraph:
         """Remove all node highlighting."""
         self._highlighted_node_ids = set()
 
-    def set_highlighted_nodes(self, node_ids: set[str] | list[str]) -> None:
-        """Highlight given node ids if they exist in this graph."""
-        self._highlighted_node_ids = {str(node_id) for node_id in node_ids if self.contains_node(node_id)}
-
+    
     def highlight_happy_path(self, happy_path_events: set[str] | list[str]) -> None:
         """Highlight nodes of to the given Happy Path activities.
 
