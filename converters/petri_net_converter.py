@@ -147,12 +147,13 @@ class PetriNetConverter:
                 toolkit.add_arc(entry, split_id)
                 toolkit.add_arc(join_id, exit_place)
 
+                toolkit.register_gateway(entry, "and", "split")
+                toolkit.register_gateway(exit_place, "and", "join")
+
                 for child in children:
                     child_entry, child_exit = build_fragment(child)
-                    toolkit.register_gateway(child_entry, "and", "split")
                     toolkit.add_arc(split_id, child_entry)
                     toolkit.add_arc(child_exit, join_id)
-                    toolkit.register_gateway(child_exit, "and", "join")
                 return entry, exit_place
 
             if op == "loop":

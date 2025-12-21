@@ -385,12 +385,8 @@ def add_petri_net_to_graph(
         attrs = {}
         data = {}
         if gtype == 'xor':
-            label = "X"
-            attrs["fillcolor"] = "#81E325"
             data["Gateway"] = "Exclusive (XOR)"
         elif gtype in ('and', 'par', 'parallel'):
-            label = "+"
-            attrs["fillcolor"] = "#E6F4FF"
             data["Gateway"] = "Parallel (AND)"
         if role:
             data["Role"] = str(role).capitalize()
@@ -426,8 +422,8 @@ def add_petri_net_to_graph(
     for place_id in petri_net['places']:
         if not graph.contains_node(place_id):
             gw_label, gw_data, gw_attrs = _gateway_payload(place_id)
-            if gw_label:
-                graph.add_place(place_id, label=gw_label, data=gw_data, **gw_attrs)
+            if gw_label is not None or gw_data or gw_attrs:
+                graph.add_place(place_id, label=gw_label or " ", data=gw_data, **gw_attrs)
             else:
                 graph.add_place(place_id)
 
@@ -444,4 +440,3 @@ def _safe_create_edge(graph, source: str, target: str, created_edges: set[tuple[
     else:
         if logger:
             logger.debug(f"[PetriNetToolkit] Skipped edge {source} -> {target} (missing node)")
-
