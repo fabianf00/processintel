@@ -713,7 +713,7 @@ class BaseMining(MiningInterface):
         if not most_frequent_traces:
             return []
 
-        return sorted(most_frequent_traces)
+        return sorted(most_frequent_traces, key=len, reverse=True)
 
     def get_happy_path_trace(self, variant_index: int | None = None) -> tuple[str, ...] | None:
         """Return the most frequent trace in the current filtered log.
