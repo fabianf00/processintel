@@ -10,6 +10,7 @@ from exceptions.io_exceptions import (
     NotImplementedFileTypeException,
 )
 from logger import get_logger
+import os
 
 
 class ExportController(BaseController):
@@ -125,8 +126,12 @@ class ExportController(BaseController):
         UnsupportedFileTypeException
             If the export format is not supported.
         """
-        self.export_model.export_graph(self.graph, "temp/graph", format, dpi=self.dpi)
-        return "temp/graph" + "." + format.lower()
+
+        tmp_output_path = os.path.join(st.session_state["session_tmp_dir"], f"graph")
+        self.export_model.export_graph(
+            self.graph, tmp_output_path, format, dpi=self.dpi
+        )
+        return tmp_output_path + f".{format.lower()}"
 
     def read_png(self, file_path: str) -> str:
         """Reads the PNG file from the disk and returns the image.

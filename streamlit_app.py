@@ -1,11 +1,13 @@
 import streamlit as st
+import tempfile
+import os
+
 from ui.home_ui.home_controller import HomeController
 from ui.column_selection_ui.column_selection_controller import ColumnSelectionController
 from ui.export_ui.export_controller import ExportController
 from ui.algorithm_explanation_ui.algorithm_explanation_controller import (
     AlgorithmExplanationController,
 )
-
 from config import algorithm_routes
 
 
@@ -14,6 +16,14 @@ st.set_page_config(
     page_icon=":bar_chart:",
     layout="wide",
 )
+
+APP_TMP_ROOT = os.path.join(tempfile.gettempdir(), "pm-insight")
+os.makedirs(APP_TMP_ROOT, exist_ok=True)
+
+if "session_tmp_dir" not in st.session_state:
+    st.session_state.session_tmp_dir = tempfile.mkdtemp(
+        dir=APP_TMP_ROOT, prefix="session_"
+    )
 
 if "page" not in st.session_state:
     st.session_state.page = "Home"
