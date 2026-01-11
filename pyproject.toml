@@ -1,0 +1,36 @@
+[build-system]
+requires = ["setuptools>=61", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "pm-insight"
+version = "1.0"
+description = "PMInsight - An Open Source Process Mining Tool"
+authors = [
+    { name="SWISDATA gGmbH", email="office@swisdata.eu" }
+]
+license = { file = "LICENSE" } 
+dependencies = [
+    "numpy",
+    "pandas",
+    "graphviz",
+    "ddcal>=1.2.0",
+    "streamlit",
+]
+readme = "README.md"
+requires-python = ">=3.11"
+
+[project.scripts]
+pm-insight = "app.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = []
+
+[tool.setuptools.package-data]
+"app" = ["components/*/frontend/build/**/*"]
+
+
+[tool.black]
+line-length = 100
+target-version = ["py312"]
