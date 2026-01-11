@@ -65,7 +65,7 @@ class GeneticMinerView(BaseAlgorithmView):
                 max_value=sidebar_values["power_value"][1],
                 step=2,
                 key="power_value",
-                help="Odd number controlling sparsity of initial causal matrices. Dependency measures are raised to this power, so higher values create initial populations with less causal relations."
+                help="Odd number controlling sparsity of initial causal matrices. Dependency measures are raised to this power, so higher values create initial populations with less causal relations.",
             )
 
             st.slider(
@@ -73,7 +73,7 @@ class GeneticMinerView(BaseAlgorithmView):
                 min_value=sidebar_values["fitness_threshold"][0],
                 max_value=sidebar_values["fitness_threshold"][1],
                 key="fitness_threshold",
-                help="Stop early if an individual reaches this fitness value. 1.0 = perfect fit."
+                help="Stop early if an individual reaches this fitness value. 1.0 = perfect fit.",
             )
 
             col1, col2, col3 = st.columns([1, 5, 1])

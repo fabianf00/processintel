@@ -7,11 +7,11 @@ class BPMNGraph(BaseGraph):
     """
 
     def __init__(
-            self,
-            process_tree=None,
-            frequency: dict[str, int] = None,
-            node_sizes: dict[str, tuple[float, float]] = None,
-            node_stats_map: dict[str, dict] = None,
+        self,
+        process_tree=None,
+        frequency: dict[str, int] = None,
+        node_sizes: dict[str, tuple[float, float]] = None,
+        node_stats_map: dict[str, dict] = None,
     ) -> None:
         """Initialize the InductiveGraph object.
 
@@ -57,11 +57,11 @@ class BPMNGraph(BaseGraph):
             self.add_ending_edges([end_node])
 
     def add_event(
-            self,
-            title: str,
-            spm: float,
-            normalized_frequency: float,
-            **event_data,
+        self,
+        title: str,
+        spm: float,
+        normalized_frequency: float,
+        **event_data,
     ) -> None:
         """Add an event to the graph.
 
@@ -108,7 +108,7 @@ class BPMNGraph(BaseGraph):
         tuple
             a tuple containing the start and end node of the section
         """
-        
+
         start_node, end_node = None, None
 
         if isinstance(process_tree, (str, int)):

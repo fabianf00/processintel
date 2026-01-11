@@ -18,8 +18,14 @@ class HeuristicMining(BaseMining):
         self.min_edge_thickness = 2
 
     def generate_graph(
-            self, spm_threshold, node_freq_threshold_normalized, node_freq_threshold_absolute,
-            edge_freq_threshold_normalized, edge_freq_threshold_absolute, dependency_threshold):
+        self,
+        spm_threshold,
+        node_freq_threshold_normalized,
+        node_freq_threshold_absolute,
+        edge_freq_threshold_normalized,
+        edge_freq_threshold_absolute,
+        dependency_threshold,
+    ):
         self.start_nodes = self._get_start_nodes()
         self.end_nodes = self._get_end_nodes()
 
@@ -40,8 +46,10 @@ class HeuristicMining(BaseMining):
         if not self.filtered_events:
             self.graph = self.graph_converter.build_empty_graph(rankdir="TB")
             return
-        
-        node_sizes = {node: self.calculate_node_size(node) for node in self.filtered_events}
+
+        node_sizes = {
+            node: self.calculate_node_size(node) for node in self.filtered_events
+        }
         edge_stats = self.get_edge_statistics()
         edge_stats_map = {(edge["source"], edge["target"]): edge for edge in edge_stats}
 
@@ -61,7 +69,9 @@ class HeuristicMining(BaseMining):
             get_sinks=self.__get_sinks_from_dependency_graph,
         )
 
-        self.graph, self.start_nodes, self.end_nodes = self.graph_converter.build_heuristic_graph(data)
+        self.graph, self.start_nodes, self.end_nodes = (
+            self.graph_converter.build_heuristic_graph(data)
+        )
 
     def get_threshold(self):
         return self.dependency_threshold
@@ -73,20 +83,27 @@ class HeuristicMining(BaseMining):
         non_diagonal_indices = np.where(dependency_matrix == 0)
         diagonal_indices = np.diag_indices(dependency_matrix.shape[0])
 
-        dependency_matrix[diagonal_indices] = self.filtered_succession_matrix[diagonal_indices] / (
-                self.filtered_succession_matrix[diagonal_indices] + 1)
+        dependency_matrix[diagonal_indices] = self.filtered_succession_matrix[
+            diagonal_indices
+        ] / (self.filtered_succession_matrix[diagonal_indices] + 1)
 
         x, y = non_diagonal_indices
 
-        dependency_matrix[x, y] = ((self.filtered_succession_matrix[x, y] - self.filtered_succession_matrix[y, x]) / (
-                self.filtered_succession_matrix[x, y] + self.filtered_succession_matrix[y, x] + 1))
+        dependency_matrix[x, y] = (
+            self.filtered_succession_matrix[x, y]
+            - self.filtered_succession_matrix[y, x]
+        ) / (
+            self.filtered_succession_matrix[x, y]
+            + self.filtered_succession_matrix[y, x]
+            + 1
+        )
         return dependency_matrix
 
     def __create_dependency_graph(self, dependency_threshold):
         dependency_graph = np.zeros(self.dependency_matrix.shape)
 
         filter_matrix = (self.filtered_succession_matrix > 0) & (
-                self.dependency_matrix >= dependency_threshold
+            self.dependency_matrix >= dependency_threshold
         )
 
         for i, j in zip(*np.where(filter_matrix)):

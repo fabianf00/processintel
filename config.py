@@ -58,7 +58,7 @@ docs_path_mappings = {
     "fuzzy": "docs/algorithms/fuzzy_miner.md",
     "inductive": "docs/algorithms/inductive_miner.md",
     "alpha": "docs/algorithms/alpha_miner.md",
-    "genetic": "docs/algorithms/genetic_miner.md"
+    "genetic": "docs/algorithms/genetic_miner.md",
 }
 
 # Maps the algorithm routes to the controllers.

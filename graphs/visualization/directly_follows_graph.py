@@ -13,17 +13,17 @@ class DirectlyFollowsGraph(BaseGraph):
         super().__init__(rankdir=rankdir)
 
     def add_event(
-            self,
-            title: str,
-            spm: float,
-            normalized_frequency: float,
-            absolute_frequency: int | None,
-            size: tuple[float, float] | None = None,
-            shape: str = "box",
-            style: str | None = None,
-            fillcolor: str = "#FDFFF5",
-            label: str | None = None,
-            **event_data,
+        self,
+        title: str,
+        spm: float,
+        normalized_frequency: float,
+        absolute_frequency: int | None,
+        size: tuple[float, float] | None = None,
+        shape: str = "box",
+        style: str | None = None,
+        fillcolor: str = "#FDFFF5",
+        label: str | None = None,
+        **event_data,
     ) -> None:
         """Add an event to the graph."""
         event_data["SPM value"] = spm
@@ -65,18 +65,18 @@ class DirectlyFollowsGraph(BaseGraph):
         )
 
     def create_edge(
-            self,
-            source: str,
-            destination: str,
-            size: float = 1.0,
-            normalized_frequency: float | None = None,
-            absolute_frequency: int | None = None,
-            dependency_score: float | None = None,
-            color: str = "black",
-            correlation: float | None = None,
-            significance: float | None = None,
-            average: bool = False,
-            **edge_data,
+        self,
+        source: str,
+        destination: str,
+        size: float = 1.0,
+        normalized_frequency: float | None = None,
+        absolute_frequency: int | None = None,
+        dependency_score: float | None = None,
+        color: str = "black",
+        correlation: float | None = None,
+        significance: float | None = None,
+        average: bool = False,
+        **edge_data,
     ) -> None:
         """Create an edge between two nodes with optional metrics."""
         prefix = "Average " if average or color == "red" else ""
@@ -102,17 +102,19 @@ class DirectlyFollowsGraph(BaseGraph):
         )
 
     def add_cluster(
-            self,
-            cluster_name: str,
-            significance: int | float,
-            size: tuple[float, float],
-            merged_nodes: list[dict[str, str | int | float]],
-            **cluster_data: dict[str, str | int | float],
+        self,
+        cluster_name: str,
+        significance: int | float,
+        size: tuple[float, float],
+        merged_nodes: list[dict[str, str | int | float]],
+        **cluster_data: dict[str, str | int | float],
     ) -> None:
         """Add a cluster node used by the fuzzy miner."""
         abs_freqs = [node.get("abs_freq", 0) for node in merged_nodes]
         avg_abs_freq = round(float(np.mean(abs_freqs))) if abs_freqs else 0
-        cluster_data["Average Frequency *(normalized)*/Average Unary Significance"] = significance
+        cluster_data["Average Frequency *(normalized)*/Average Unary Significance"] = (
+            significance
+        )
         cluster_data["Average Frequency *(absolute)*"] = avg_abs_freq
         cluster_data["Nodes"] = merged_nodes
         width, height = size
@@ -134,7 +136,9 @@ class DirectlyFollowsGraph(BaseGraph):
         data = node.get_data() or {}
         if data.get("Nodes"):
             description = ""
-            avg_norm = data.get("Average Frequency *(normalized)*/Average Unary Significance", 0.0)
+            avg_norm = data.get(
+                "Average Frequency *(normalized)*/Average Unary Significance", 0.0
+            )
             avg_abs = data.get("Average Frequency *(absolute)*", 0)
             description += f"\n**Average Frequency *(absolute)*:** {avg_abs}"
             description += f"\n**Average Frequency *(normalized)*/Average Unary Significance:** {float(avg_norm):.2f}"
@@ -142,12 +146,20 @@ class DirectlyFollowsGraph(BaseGraph):
             for merged in data.get("Nodes", []):
                 spm = merged.get("spm")
                 norm_freq = merged.get("norm_freq")
-                spm_str = f"{float(spm):.2f}" if isinstance(spm, (float, int)) else str(spm)
-                norm_freq_str = f"{float(norm_freq):.2f}" if isinstance(norm_freq, (float, int)) else str(norm_freq)
+                spm_str = (
+                    f"{float(spm):.2f}" if isinstance(spm, (float, int)) else str(spm)
+                )
+                norm_freq_str = (
+                    f"{float(norm_freq):.2f}"
+                    if isinstance(norm_freq, (float, int))
+                    else str(norm_freq)
+                )
                 description += f"\n **{merged.get('id')}**:\n"
                 description += f"- SPM value: {spm_str}\n"
                 description += f"- Frequency *(absolute)*: {merged.get('abs_freq')}\n"
-                description += f"- Frequency *(normalized)*/Unary Significance: {norm_freq_str}\n"
+                description += (
+                    f"- Frequency *(normalized)*/Unary Significance: {norm_freq_str}\n"
+                )
 
             return node.get_id(), description
 

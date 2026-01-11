@@ -6,7 +6,9 @@ from ui.base_algorithm_ui.base_algorithm_controller import BaseAlgorithmControll
 class AlphaMinerController(BaseAlgorithmController):
     """Controller for the Alpha Miner algorithm."""
 
-    def __init__(self, views=None, mining_model_class=None, dataframe_transformations=None):
+    def __init__(
+        self, views=None, mining_model_class=None, dataframe_transformations=None
+    ):
         """Initializes the Alpha Miner controller.
 
         Parameters
@@ -51,7 +53,6 @@ class AlphaMinerController(BaseAlgorithmController):
             True if any of the algorithm parameters have changed, False otherwise.
         """
         return super().have_parameters_changed()
-    
 
     def get_sidebar_values(self) -> dict[str, tuple[float, float]]:
         """Returns the sidebar values for the Alpha Miner algorithm.

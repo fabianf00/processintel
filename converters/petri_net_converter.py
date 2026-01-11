@@ -49,7 +49,9 @@ class PetriNetConverter:
         graph.create_edge("Start", "End")
         return graph
 
-    def build_inductive_graph(self, data: InductivePetriNetData, logger=None) -> tuple[PetriNetGraph, dict]:
+    def build_inductive_graph(
+        self, data: InductivePetriNetData, logger=None
+    ) -> tuple[PetriNetGraph, dict]:
         """Create a Petri net graph from an inductive mining process tree."""
         toolkit = self.toolkit
         net, start_place, end_place = toolkit.create_base_net()
@@ -111,7 +113,9 @@ class PetriNetConverter:
                 for idx, child in enumerate(children):
                     forced_entry = entry_override if idx == 0 else previous_exit
                     forced_exit = exit_override if idx == len(children) - 1 else None
-                    child_entry, child_exit = build_fragment(child, forced_entry, forced_exit)
+                    child_entry, child_exit = build_fragment(
+                        child, forced_entry, forced_exit
+                    )
                     if entry is None:
                         entry = child_entry
                     previous_exit = child_exit
@@ -162,7 +166,9 @@ class PetriNetConverter:
                 entry = entry_override or new_place("loop_in")
                 exit_place = exit_override or new_place("loop_out")
 
-                body_entry, body_exit = build_fragment(children[0], entry_override=entry)
+                body_entry, body_exit = build_fragment(
+                    children[0], entry_override=entry
+                )
 
                 connect_places(body_exit, exit_place, "loop_exit")
 
@@ -182,7 +188,9 @@ class PetriNetConverter:
             raise ValueError(f"Unsupported process tree operator: {op}")
 
         if data.process_tree:
-            build_fragment(data.process_tree, entry_override=start_place, exit_override=end_place)
+            build_fragment(
+                data.process_tree, entry_override=start_place, exit_override=end_place
+            )
         else:
             toolkit.add_arc(start_place, end_place)
 
@@ -200,7 +208,9 @@ class PetriNetConverter:
         )
         return graph, net
 
-    def build_alpha_graph(self, data: AlphaPetriNetData, logger=None) -> tuple[PetriNetGraph, dict, set[str], set[str]]:
+    def build_alpha_graph(
+        self, data: AlphaPetriNetData, logger=None
+    ) -> tuple[PetriNetGraph, dict, set[str], set[str]]:
         """Create the Petri net graph for Alpha mining."""
         graph = PetriNetGraph()
         graph.add_start_node()
@@ -232,8 +242,16 @@ class PetriNetConverter:
                 continue
 
             A, B = pair
-            valid_sources = [a for a in A if a in data.nodes_to_draw and any(edge_filter(a, b) for b in B)]
-            valid_targets = [b for b in B if b in data.nodes_to_draw and any(edge_filter(a, b) for a in A)]
+            valid_sources = [
+                a
+                for a in A
+                if a in data.nodes_to_draw and any(edge_filter(a, b) for b in B)
+            ]
+            valid_targets = [
+                b
+                for b in B
+                if b in data.nodes_to_draw and any(edge_filter(a, b) for a in A)
+            ]
 
             if not valid_sources or not valid_targets:
                 continue
@@ -275,15 +293,23 @@ class PetriNetConverter:
 
         return graph, net, extra_start_nodes, extra_end_nodes
 
-    def build_genetic_graph(self, data: GeneticPetriNetData, logger=None) -> tuple[PetriNetGraph, dict]:
+    def build_genetic_graph(
+        self, data: GeneticPetriNetData, logger=None
+    ) -> tuple[PetriNetGraph, dict]:
         graph = PetriNetGraph()
         graph.add_start_node()
         graph.add_end_node()
 
-        petri_net = self._build_from_genetic_individual(data.individual, data.start_nodes)
+        petri_net = self._build_from_genetic_individual(
+            data.individual, data.start_nodes
+        )
         data.individual["_petri_net"] = petri_net
 
-        visible_labels = [act for act in data.individual.get("activities", []) if act in data.filtered_events]
+        visible_labels = [
+            act
+            for act in data.individual.get("activities", [])
+            if act in data.filtered_events
+        ]
 
         add_petri_net_to_graph(
             graph,
@@ -296,32 +322,36 @@ class PetriNetConverter:
 
         return graph, petri_net
 
-    def build_petri_net_for_individual(self, individual: dict, start_nodes: set[str]) -> dict:
+    def build_petri_net_for_individual(
+        self, individual: dict, start_nodes: set[str]
+    ) -> dict:
         """Net creation for the simulation step without building a graph."""
         return self._build_from_genetic_individual(individual, start_nodes)
 
-    def _build_from_genetic_individual(self, individual: dict, start_nodes: set[str]) -> dict:
+    def _build_from_genetic_individual(
+        self, individual: dict, start_nodes: set[str]
+    ) -> dict:
 
         net, start_place, end_place = self.toolkit.create_base_net()
 
         # Register all visible activities as transitions
-        for act in individual['activities']:
+        for act in individual["activities"]:
             self.toolkit.register_transition(act, visible=True, label=str(act))
 
         # Initialize helper structures for mapping input/output connections
         pred_to_input_place: dict[tuple[str, str], str] = {}
         activity_input_places: dict[str, set[str]] = {}
 
-        inputs = individual.get('I', {})
-        outputs = individual.get('O', {})
+        inputs = individual.get("I", {})
+        outputs = individual.get("O", {})
 
         # Create input places for each input subset
-        for act in individual['activities']:
+        for act in individual["activities"]:
             subsets = inputs.get(act) or []
 
             # Case 1: No input subsets
             if not subsets:
-                net['empty_input_activities'].add(act)
+                net["empty_input_activities"].add(act)
                 self.toolkit.ensure_input_place(
                     act,
                     "Start",
@@ -330,12 +360,12 @@ class PetriNetConverter:
                     subset=set(),
                 )
                 continue
-            
+
             # Case 2: Iterate over each input subset
             for idx, subset in enumerate(subsets):
                 if not subset:
                     # Empty input subset (start candidate)
-                    net['empty_input_activities'].add(act)
+                    net["empty_input_activities"].add(act)
                     self.toolkit.ensure_input_place(
                         act,
                         "Start",
@@ -347,22 +377,25 @@ class PetriNetConverter:
 
                 # Normal input subset: create corresponding input place
                 place_id = f"pi_{act}_{idx}_{'-'.join(sorted(subset))}"
-                if place_id not in net['places']:
+                if place_id not in net["places"]:
                     self.toolkit.register_place(place_id)
                     self.toolkit.add_arc(place_id, act)
                     activity_input_places.setdefault(act, set()).add(place_id)
 
                 # Store mapping for later lookups
-                net['input_subset_map'][place_id] = {'activity': act, 'subset': set(subset)}
+                net["input_subset_map"][place_id] = {
+                    "activity": act,
+                    "subset": set(subset),
+                }
                 # Remember which input place connects a predecessor and successor
                 for pred in subset:
                     pred_to_input_place[(pred, act)] = place_id
-                    
+
         # Initialize counter for invisible transitions (τ)
         tau_counter = itertools.count()
 
         # Build output places and connect via silent transitions
-        for act in individual['activities']:
+        for act in individual["activities"]:
             out_sets = outputs.get(act) or []
 
             # Case 1: No output sets -> connect to end place
@@ -390,10 +423,10 @@ class PetriNetConverter:
                     self.toolkit.add_arc(place_id, tau_id)
                     self.toolkit.add_arc(tau_id, end_place)
                     continue
-                
+
                 # Normal output subset -> connect to successor input places
                 place_id = f"po_{act}_{idx}_{'-'.join(sorted(out_set))}"
-                if place_id not in net['places']:
+                if place_id not in net["places"]:
                     self.toolkit.register_place(place_id)
                 self.toolkit.add_arc(act, place_id)
 
@@ -408,7 +441,7 @@ class PetriNetConverter:
                             activity_input_places,
                             subset={act},
                         )
-                        
+
                     # Create invisible τ-transition between po_place and pi_place
                     tau_id = f"tau_{next(tau_counter)}"
                     self.toolkit.register_transition(tau_id, visible=False)
@@ -416,7 +449,7 @@ class PetriNetConverter:
                     self.toolkit.add_arc(tau_id, target_place)
 
         # Connect Start place to true start activities
-        for act in individual['activities']:
+        for act in individual["activities"]:
             if act not in start_nodes:
                 continue
 
@@ -428,14 +461,16 @@ class PetriNetConverter:
                 activity_input_places,
             )
 
-            net['start_buffer_places'].add(target_place)
+            net["start_buffer_places"].add(target_place)
 
-            for place_id, meta in net['input_subset_map'].items():
-                if meta.get('activity') == act:
-                    subset = meta.get('subset') or set()
+            for place_id, meta in net["input_subset_map"].items():
+                if meta.get("activity") == act:
+                    subset = meta.get("subset") or set()
                     if subset == {act}:
-                        net['initial_marking'][place_id] = net['initial_marking'].get(place_id, 0) + 1
-                        net['start_buffer_places'].add(place_id)
+                        net["initial_marking"][place_id] = (
+                            net["initial_marking"].get(place_id, 0) + 1
+                        )
+                        net["start_buffer_places"].add(place_id)
 
             # Create silent from start_place → activity input place
             tau_id = f"tau_{next(tau_counter)}"

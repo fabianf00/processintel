@@ -53,17 +53,27 @@ class GeneticMining(BaseMining):
         self.best_individual = None
         self.start_measures = {}
         self.end_measures = {}
-        
+
         self.petri_net = None
         self.petri_toolkit = PetriNetToolkit()
         self.graph_converter = PetriNetConverter(self.petri_toolkit)
 
-
         self.logger = get_logger("GeneticMining")
 
-    def generate_graph(self, spm_threshold, node_freq_threshold_normalized, node_freq_threshold_absolute,
-                       population_size, max_generations, crossover_rate, mutation_rate, elitism_rate, tournament_size,
-                       power_value, fitness_threshold):
+    def generate_graph(
+        self,
+        spm_threshold,
+        node_freq_threshold_normalized,
+        node_freq_threshold_absolute,
+        population_size,
+        max_generations,
+        crossover_rate,
+        mutation_rate,
+        elitism_rate,
+        tournament_size,
+        power_value,
+        fitness_threshold,
+    ):
         """
         Generate a process model graph using the genetic miner.
         This method runs the full pipeline:
@@ -95,7 +105,9 @@ class GeneticMining(BaseMining):
             Minimum fitness value at which the heuristic individual creation stops early.
         """
         if population_size < 3:
-            raise ValueError("Population size must be at least 3 for the genetic algorithm.")
+            raise ValueError(
+                "Population size must be at least 3 for the genetic algorithm."
+            )
         run_id = str(uuid.uuid4())
 
         with GeneticMining._global_lock:
@@ -134,13 +146,24 @@ class GeneticMining(BaseMining):
 
         self._initialize_dependency_matrix()
 
-        self._run_genetic_miner(population_size, max_generations, crossover_rate, mutation_rate, elitism_rate,
-                                tournament_size, run_id, power_value, fitness_threshold)
+        self._run_genetic_miner(
+            population_size,
+            max_generations,
+            crossover_rate,
+            mutation_rate,
+            elitism_rate,
+            tournament_size,
+            run_id,
+            power_value,
+            fitness_threshold,
+        )
 
         # Only generate if it's still an active run
         with GeneticMining._global_lock:
             if GeneticMining._global_current_run_id != run_id:
-                self.logger.debug("[generate_graph] Skipped graph generation (run cancelled)")
+                self.logger.debug(
+                    "[generate_graph] Skipped graph generation (run cancelled)"
+                )
                 return
 
         self._generate_graph_from_genetic()
@@ -168,17 +191,19 @@ class GeneticMining(BaseMining):
         None
             Updates self.dependency_matrix, self.start_measures, and self.end_measures.
         """
-        all_activities = ['start'] + list(self.filtered_events) + ['end']
+        all_activities = ["start"] + list(self.filtered_events) + ["end"]
         activity_idx = {a: i for i, a in enumerate(all_activities)}
         n = len(all_activities)
-        start = activity_idx['start']
-        end = activity_idx['end']
+        start = activity_idx["start"]
+        end = activity_idx["end"]
 
         follows = np.zeros((n, n), dtype=np.int32)
         L1L = np.zeros(n, dtype=np.int32)
         L2L = np.zeros((n, n), dtype=np.int32)
 
-        filtered_positions = self.filtered_event_positions #reusing mapping in BaseMining
+        filtered_positions = (
+            self.filtered_event_positions
+        )  # reusing mapping in BaseMining
         filtered_matrix = self.filtered_succession_matrix
         for a in self.filtered_events:
             idx_a = activity_idx[a]
@@ -195,15 +220,19 @@ class GeneticMining(BaseMining):
         # Count over all traces (only needed for start/end edges and L2L)
         for trace in self.node_frequency_filtered_log:
             # Add virtual start and end activities to each trace
-            extended_trace = ['start'] + list(trace) + ['end']
-            idx = np.fromiter((activity_idx[x] for x in extended_trace), count=len(extended_trace), dtype=np.int32)
+            extended_trace = ["start"] + list(trace) + ["end"]
+            idx = np.fromiter(
+                (activity_idx[x] for x in extended_trace),
+                count=len(extended_trace),
+                dtype=np.int32,
+            )
 
             if idx.size >= 2:
                 a, b = idx[:-1], idx[1:]
-                start_mask = (a == start)
+                start_mask = a == start
                 if start_mask.any():
                     np.add.at(follows, (a[start_mask], b[start_mask]), 1)
-                end_mask = (b == end)
+                end_mask = b == end
                 if end_mask.any():
                     np.add.at(follows, (a[end_mask], b[end_mask]), 1)
 
@@ -223,7 +252,9 @@ class GeneticMining(BaseMining):
                     l2l_ba = L2L[(idx_b, idx_a)]
                     if l2l_ab > 0:
                         # Case 1: Length-two loop exists
-                        self.dependency_matrix[(a, b)] = (l2l_ab + l2l_ba) / (l2l_ab + l2l_ba + 1.0)
+                        self.dependency_matrix[(a, b)] = (l2l_ab + l2l_ba) / (
+                            l2l_ab + l2l_ba + 1.0
+                        )
                     else:
                         # Case 2: No length-two loop
                         fab = follows[(idx_a, idx_b)]
@@ -255,8 +286,18 @@ class GeneticMining(BaseMining):
                 f_ea = follows[(end, idx_a)]
                 self.end_measures[a] = (f_ae - f_ea) / (f_ae + f_ea + 1.0)
 
-    def _run_genetic_miner(self, population_size, max_generations, crossover_rate, mutation_rate, elitism_rate,
-                           tournament_size, run_id, power_value, fitness_threshold):
+    def _run_genetic_miner(
+        self,
+        population_size,
+        max_generations,
+        crossover_rate,
+        mutation_rate,
+        elitism_rate,
+        tournament_size,
+        run_id,
+        power_value,
+        fitness_threshold,
+    ):
         """
         Execute the genetic algorithm loop to evolve process models.
 
@@ -295,26 +336,32 @@ class GeneticMining(BaseMining):
         elitism_count = max(1, int(population_size * elitism_rate))
 
         init_population = [
-            self._create_heuristic_individual(self.filtered_events, power_value) for _ in range(population_size)]
+            self._create_heuristic_individual(self.filtered_events, power_value)
+            for _ in range(population_size)
+        ]
 
         for generation in range(max_generations):
             # Check if this run is still valid
             with GeneticMining._global_lock:
                 if GeneticMining._global_current_run_id != run_id:
-                    self.logger.debug(f"[GeneticMiner] Cancelled run_id={run_id} during generation {generation}")
+                    self.logger.debug(
+                        f"[GeneticMiner] Cancelled run_id={run_id} during generation {generation}"
+                    )
                     stop_early = True
                     break
 
             if generation == 0:
                 for ind in init_population:
-                    if self._check_and_update_best_individual(ind, fitness_threshold, generation):
+                    if self._check_and_update_best_individual(
+                        ind, fitness_threshold, generation
+                    ):
                         stop_early = True
                         break
                 if stop_early:
                     break
-                init_population.sort(key=lambda x: -x['fitness'])
+                init_population.sort(key=lambda x: -x["fitness"])
 
-            best_fitness = init_population[0]['fitness']
+            best_fitness = init_population[0]["fitness"]
 
             if best_fitness > best_so_far:
                 best_so_far = best_fitness
@@ -322,41 +369,52 @@ class GeneticMining(BaseMining):
             else:
                 generations += 1
 
-            self.logger.debug(
-                f"Generation {generation}: fitness = {best_fitness:.4f}")
+            self.logger.debug(f"Generation {generation}: fitness = {best_fitness:.4f}")
 
             if generations == gen_limit:
-                self.logger.debug(f"[GeneticMiner] Stopped due to stagnation ({generations} == {gen_limit})")
+                self.logger.debug(
+                    f"[GeneticMiner] Stopped due to stagnation ({generations} == {gen_limit})"
+                )
                 break
 
             next_gen = init_population[:elitism_count]
 
             while len(next_gen) < population_size and not stop_early:
-                parent1 = self._tournament_selection(init_population, min(tournament_size, population_size))
-                parent2 = self._tournament_selection(init_population, min(tournament_size, population_size))
+                parent1 = self._tournament_selection(
+                    init_population, min(tournament_size, population_size)
+                )
+                parent2 = self._tournament_selection(
+                    init_population, min(tournament_size, population_size)
+                )
 
                 if random.random() < crossover_rate:
                     child1, child2 = self._crossover(parent1, parent2)
                 else:
-                    child1, child2 = self._clone_individual(parent1), self._clone_individual(parent2)
+                    child1, child2 = self._clone_individual(
+                        parent1
+                    ), self._clone_individual(parent2)
 
                 if mutation_rate > 0.0:
                     self._mutate(child1, mutation_rate)
                     self._mutate(child2, mutation_rate)
 
                 # evaluate fitness
-                if self._check_and_update_best_individual(child1, fitness_threshold, generation):
+                if self._check_and_update_best_individual(
+                    child1, fitness_threshold, generation
+                ):
                     stop_early = True
                     break
                 next_gen.append(child1)
 
                 if len(next_gen) < population_size:
-                    if self._check_and_update_best_individual(child2, fitness_threshold, generation):
+                    if self._check_and_update_best_individual(
+                        child2, fitness_threshold, generation
+                    ):
                         stop_early = True
                         break
                     next_gen.append(child2)
 
-            init_population = sorted(next_gen, key=lambda x: -x['fitness'])
+            init_population = sorted(next_gen, key=lambda x: -x["fitness"])
 
             if stop_early:
                 break
@@ -368,7 +426,9 @@ class GeneticMining(BaseMining):
         self.logger.debug(f"[FINAL CAUSAL MATRIX] C = {self.best_individual['C']}")
         self.logger.debug(f"[FINAL INDIVIDUAL] I = {self.best_individual['I']}")
         self.logger.debug(f"[FINAL INDIVIDUAL] O = {self.best_individual['O']}")
-        self.logger.debug(f"[LOG TRACES] = {', '.join(str(trace) for trace in self.node_frequency_filtered_log)}")
+        self.logger.debug(
+            f"[LOG TRACES] = {', '.join(str(trace) for trace in self.node_frequency_filtered_log)}"
+        )
 
     def _check_and_update_best_individual(self, ind, fitness_threshold, generation):
         """
@@ -391,11 +451,12 @@ class GeneticMining(BaseMining):
         bool
             True if stop condition is met, False otherwise.
         """
-        ind['fitness'] = self._evaluate_fitness(ind)
-        if ind['fitness'] >= fitness_threshold:
+        ind["fitness"] = self._evaluate_fitness(ind)
+        if ind["fitness"] >= fitness_threshold:
             self.best_individual = ind
             self.logger.debug(
-                f"[GeneticMiner] Stopped early: fitness {ind['fitness']:.4f} ≥ {fitness_threshold} (Generation: {generation})")
+                f"[GeneticMiner] Stopped early: fitness {ind['fitness']:.4f} ≥ {fitness_threshold} (Generation: {generation})"
+            )
             return True
         return False
 
@@ -416,7 +477,9 @@ class GeneticMining(BaseMining):
         dict
             The selected fittest individual.
         """
-        return max(random.sample(population, tournament_size), key=lambda x: x['fitness'])
+        return max(
+            random.sample(population, tournament_size), key=lambda x: x["fitness"]
+        )
 
     def _generate_graph_from_genetic(self):
         """
@@ -439,11 +502,11 @@ class GeneticMining(BaseMining):
 
         self._rebuild_causal_relations(individual)
 
-        node_stats_map = {stat['node']: stat for stat in self.get_node_statistics()}
+        node_stats_map = {stat["node"]: stat for stat in self.get_node_statistics()}
 
         start_nodes, end_nodes = self._get_individual_boundaries(individual)
-        start_activities = [a for a in individual['activities'] if a in start_nodes]
-        end_activities = [a for a in individual['activities'] if a in end_nodes]
+        start_activities = [a for a in individual["activities"] if a in start_nodes]
+        end_activities = [a for a in individual["activities"] if a in end_nodes]
 
         self.logger.debug(f"Start activities: {start_activities}")
         self.logger.debug(f"End activities: {end_activities}")
@@ -496,7 +559,9 @@ class GeneticMining(BaseMining):
                 D[activity_idx[a], activity_idx[b]] = val
 
         # Step 1: probabilistic causal matrix
-        causal_matrix = (np.random.rand(n, n) < (np.clip(D, 0.0, 1.0) ** power_value)).astype(int)
+        causal_matrix = (
+            np.random.rand(n, n) < (np.clip(D, 0.0, 1.0) ** power_value)
+        ).astype(int)
 
         # Step 2: apply S(t) wipe (columns)
         for a, idx_a in activity_idx.items():
@@ -525,7 +590,7 @@ class GeneticMining(BaseMining):
                 for b in out_set:
                     C.add((a, b))
 
-        return {'activities': activities, 'C': C, 'I': I, 'O': O}
+        return {"activities": activities, "C": C, "I": I, "O": O}
 
     @staticmethod
     def _create_partition(activities):
@@ -572,7 +637,9 @@ class GeneticMining(BaseMining):
         float
             Fitness score in [0.0, 1.0].
         """
-        total_acts = max(1, sum(len(trace) for trace in self.node_frequency_filtered_log))
+        total_acts = max(
+            1, sum(len(trace) for trace in self.node_frequency_filtered_log)
+        )
         total_traces = max(1, len(self.node_frequency_filtered_log))
 
         parsed_sum, completed_sum = 0, 0
@@ -582,25 +649,37 @@ class GeneticMining(BaseMining):
             parsed_sum += parsed
             completed_sum += 1 if completed else 0
 
-        fitness = max(0.0, min(1.0, 0.40 * (parsed_sum / total_acts) + 0.60 * (completed_sum / total_traces)))
+        fitness = max(
+            0.0,
+            min(
+                1.0,
+                0.40 * (parsed_sum / total_acts)
+                + 0.60 * (completed_sum / total_traces),
+            ),
+        )
 
         return fitness
 
     def _parse_trace_token_game(self, individual, trace):
 
         start_nodes, _ = self._get_individual_boundaries(individual)
-        petri_net = individual.get('_petri_net')
-        
+        petri_net = individual.get("_petri_net")
+
         if petri_net is None:
-            petri_net = self.graph_converter.build_petri_net_for_individual(individual, start_nodes)
-            individual['_petri_net'] = petri_net
+            petri_net = self.graph_converter.build_petri_net_for_individual(
+                individual, start_nodes
+            )
+            individual["_petri_net"] = petri_net
         else:
             self.petri_toolkit.set_net(petri_net)
 
-        parsed_count, is_completed = self.petri_toolkit.simulate_trace(trace, start_nodes,)
-        
+        parsed_count, is_completed = self.petri_toolkit.simulate_trace(
+            trace,
+            start_nodes,
+        )
+
         return parsed_count, is_completed
-    
+
     def _crossover(self, parent1, parent2):
         """
         Perform crossover between two parents at a random activity.
@@ -627,11 +706,11 @@ class GeneticMining(BaseMining):
         offspring2 = self._clone_individual(parent2)
 
         # Select crossover activity
-        t = random.choice(parent1['activities'])
+        t = random.choice(parent1["activities"])
 
         # Recombine INPUT(t)
-        set1 = list(offspring1['I'][t])
-        set2 = list(offspring2['I'][t])
+        set1 = list(offspring1["I"][t])
+        set2 = list(offspring2["I"][t])
         if set1 and set2:
             sp1 = random.randint(0, len(set1) - 1)
             sp2 = random.randint(0, len(set2) - 1)
@@ -639,19 +718,19 @@ class GeneticMining(BaseMining):
             new_in1 = set1[:sp1] + set2[sp2:]
             new_in2 = set2[:sp2] + set1[sp1:]
             # resolve overlaps
-            offspring1['I'][t] = self._resolve_overlaps(new_in1)
-            offspring2['I'][t] = self._resolve_overlaps(new_in2)
+            offspring1["I"][t] = self._resolve_overlaps(new_in1)
+            offspring2["I"][t] = self._resolve_overlaps(new_in2)
 
         # Recombine OUTPUT(t)
-        out1 = list(offspring1['O'][t])
-        out2 = list(offspring2['O'][t])
+        out1 = list(offspring1["O"][t])
+        out2 = list(offspring2["O"][t])
         if out1 and out2:
             sp1 = random.randint(0, len(out1) - 1)
             sp2 = random.randint(0, len(out2) - 1)
             new_out1 = out1[:sp1] + out2[sp2:]
             new_out2 = out2[:sp2] + out1[sp1:]
-            offspring1['O'][t] = self._resolve_overlaps(new_out1)
-            offspring2['O'][t] = self._resolve_overlaps(new_out2)
+            offspring1["O"][t] = self._resolve_overlaps(new_out1)
+            offspring2["O"][t] = self._resolve_overlaps(new_out2)
 
         # Ensure consistency
         self._update_related_activities(offspring1, t)
@@ -683,11 +762,17 @@ class GeneticMining(BaseMining):
              Copy of the individual with the same structure and values.
         """
         return {
-            'activities': list(ind['activities']),
-            'C': set(ind['C']),
-            'I': {a: [set(input_sets) for input_sets in (ind['I'].get(a) or [set()])] for a in ind['activities']},
-            'O': {a: [set(output_sets) for output_sets in (ind['O'].get(a) or [set()])] for a in ind['activities']},
-            'fitness': ind.get('fitness', 0.0),
+            "activities": list(ind["activities"]),
+            "C": set(ind["C"]),
+            "I": {
+                a: [set(input_sets) for input_sets in (ind["I"].get(a) or [set()])]
+                for a in ind["activities"]
+            },
+            "O": {
+                a: [set(output_sets) for output_sets in (ind["O"].get(a) or [set()])]
+                for a in ind["activities"]
+            },
+            "fitness": ind.get("fitness", 0.0),
         }
 
     @staticmethod
@@ -750,14 +835,14 @@ class GeneticMining(BaseMining):
         None
             Individual is modified in place.
         """
-        for act in individual['activities']:
+        for act in individual["activities"]:
             if random.random() < mutation_rate:
                 # Mutate INPUT sets
-                if individual['I'][act]:
-                    individual['I'][act] = self._mutate_sets(individual['I'][act])
+                if individual["I"][act]:
+                    individual["I"][act] = self._mutate_sets(individual["I"][act])
                 # Mutate OUTPUT sets
-                if individual['O'][act]:
-                    individual['O'][act] = self._mutate_sets(individual['O'][act])
+                if individual["O"][act]:
+                    individual["O"][act] = self._mutate_sets(individual["O"][act])
 
         self._update_related_activities(individual)
 
@@ -838,8 +923,8 @@ class GeneticMining(BaseMining):
         None
             Individual is modified in place.
         """
-        I, O, C = individual['I'], individual['O'], individual['C']
-        acts = individual['activities']
+        I, O, C = individual["I"], individual["O"], individual["C"]
+        acts = individual["activities"]
 
         def prune(lst):
             if lst:
@@ -918,28 +1003,32 @@ class GeneticMining(BaseMining):
             # remove inconsistencies
             for a, outs in O.items():
                 for out in outs:
-                    out.difference_update({b for b in out if all(a not in s for s in I.get(b, []))})
+                    out.difference_update(
+                        {b for b in out if all(a not in s for s in I.get(b, []))}
+                    )
                 prune(outs)
             for b, ins in I.items():
                 for inn in ins:
-                    inn.difference_update({a for a in inn if all(b not in s for s in O.get(a, []))})
+                    inn.difference_update(
+                        {a for a in inn if all(b not in s for s in O.get(a, []))}
+                    )
                 prune(ins)
 
         # rebuild C from O
         self._rebuild_causal_relations(individual)
-    
+
     @staticmethod
     def _get_individual_boundaries(individual):
         """
         Determine start and end nodes based on the individual's I/O sets.
         Returns Sets of start and end activities for the individual.
         """
-        inputs = individual.get('I') or {}
-        outputs = individual.get('O') or {}
+        inputs = individual.get("I") or {}
+        outputs = individual.get("O") or {}
         start_nodes = set()
         end_nodes = set()
 
-        for act in individual.get('activities', []):
+        for act in individual.get("activities", []):
             input_sets = inputs.get(act) or []
             if not input_sets or any(not subset for subset in input_sets):
                 start_nodes.add(act)
@@ -966,11 +1055,11 @@ class GeneticMining(BaseMining):
             Updates individual['C'].
         """
         C = set()
-        for a in individual['activities']:
-            for out_set in individual['O'][a]:
+        for a in individual["activities"]:
+            for out_set in individual["O"][a]:
                 for b in out_set:
-                        C.add((a, b))
-        individual['C'] = C
+                    C.add((a, b))
+        individual["C"] = C
 
     def get_population_size(self):
         return self.population_size

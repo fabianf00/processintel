@@ -3,6 +3,7 @@ from typing import Any, Callable
 
 from graphs.visualization import DirectlyFollowsGraph
 
+
 @dataclass
 class HeuristicDFGData:
     dependency_graph: Any
@@ -18,13 +19,15 @@ class HeuristicDFGData:
     edge_scale_factor: Callable[[int, int], float]
     get_sources: Callable[[Any], set[str]]
     get_sinks: Callable[[Any], set[str]]
-    
+
+
 @dataclass
 class FuzzyDFGData:
     nodes_after_first_rule: set[str]
     clustered_nodes_after_sec_rule: Any
     list_of_filtered_edges_as_node: list[tuple[str, str]]
-    
+
+
 class DFGConverter:
 
     @staticmethod
@@ -36,7 +39,9 @@ class DFGConverter:
         return graph
 
     @staticmethod
-    def build_heuristic_graph(data: HeuristicDFGData) -> tuple[DirectlyFollowsGraph, set[str], set[str]]:
+    def build_heuristic_graph(
+        data: HeuristicDFGData,
+    ) -> tuple[DirectlyFollowsGraph, set[str], set[str]]:
         graph = DirectlyFollowsGraph(rankdir="TB")
         graph.add_start_node()
         graph.add_end_node()
@@ -69,7 +74,9 @@ class DFGConverter:
                     edge_stats = data.edge_stats_map.get((source, target), {})
                     norm_frequency = edge_stats.get("normalized_frequency", 0.0)
                     abs_frequency = edge_stats.get("absolute_frequency", 0)
-                    edge_thickness = (data.edge_scale_factor(i, j) + data.min_edge_thickness)
+                    edge_thickness = (
+                        data.edge_scale_factor(i, j) + data.min_edge_thickness
+                    )
                     dependency_score = float(data.dependency_matrix[i][j])
 
                     graph.create_edge(
@@ -78,38 +85,54 @@ class DFGConverter:
                         size=edge_thickness,
                         normalized_frequency=norm_frequency,
                         absolute_frequency=abs_frequency,
-                        dependency_score=dependency_score
+                        dependency_score=dependency_score,
                     )
 
-                if j == len(data.filtered_events) - 1 and column_total == 0 and data.filtered_events[i] not in end_nodes:
+                if (
+                    j == len(data.filtered_events) - 1
+                    and column_total == 0
+                    and data.filtered_events[i] not in end_nodes
+                ):
                     end_nodes.add(data.filtered_events[i])
-                if j == len(data.filtered_events) - 1 and row_total == 0 and data.filtered_events[i] not in start_nodes:
+                if (
+                    j == len(data.filtered_events) - 1
+                    and row_total == 0
+                    and data.filtered_events[i] not in start_nodes
+                ):
                     start_nodes.add(data.filtered_events[i])
 
         graph.add_starting_edges(start_nodes.intersection(set(data.filtered_events)))
         graph.add_ending_edges(end_nodes.intersection(set(data.filtered_events)))
 
-        source_nodes = data.get_sources(data.dependency_graph).intersection(set(data.filtered_events))
-        sink_nodes = data.get_sinks(data.dependency_graph).intersection(set(data.filtered_events))
+        source_nodes = data.get_sources(data.dependency_graph).intersection(
+            set(data.filtered_events)
+        )
+        sink_nodes = data.get_sinks(data.dependency_graph).intersection(
+            set(data.filtered_events)
+        )
 
         graph.add_starting_edges(source_nodes - start_nodes)
         graph.add_ending_edges(sink_nodes - end_nodes)
 
         return graph, start_nodes, end_nodes
-    
+
     @staticmethod
     def build_fuzzy_graph(miner, data: FuzzyDFGData) -> DirectlyFollowsGraph:
         graph = DirectlyFollowsGraph(rankdir="TB")
         miner.graph = graph  # make sure helper methods write to the same graph
 
-        add_clustered_nodes = getattr(miner, "_FuzzyMining__add_clustered_nodes_to_graph")
+        add_clustered_nodes = getattr(
+            miner, "_FuzzyMining__add_clustered_nodes_to_graph"
+        )
         add_normal_nodes = getattr(miner, "_FuzzyMining__add_normal_nodes_to_graph")
         add_edges = getattr(miner, "_FuzzyMining__add_edges_to_graph")
 
         add_clustered_nodes(data.clustered_nodes_after_sec_rule, miner.sign_dict)
         add_normal_nodes(data.nodes_after_first_rule, miner.list_of_clustered_nodes)
 
-        add_edges(data.clustered_nodes_after_sec_rule, data.list_of_filtered_edges_as_node)
+        add_edges(
+            data.clustered_nodes_after_sec_rule, data.list_of_filtered_edges_as_node
+        )
 
         graph.add_start_node()
         graph.add_end_node()
@@ -160,4 +183,3 @@ class DFGConverter:
                 graph.add_ending_edges([source])
 
         return graph
-    

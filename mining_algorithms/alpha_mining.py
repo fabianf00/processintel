@@ -47,8 +47,12 @@ class AlphaMining(BaseMining):
         xl_set = []
 
         subsets = itertools.chain.from_iterable(
-            itertools.combinations(unique_events, r) for r in range(1, len(unique_events) + 1))
-        subsets_in_choice = [_set for _set in subsets if self.__is_set_in_choice(_set, choice)]
+            itertools.combinations(unique_events, r)
+            for r in range(1, len(unique_events) + 1)
+        )
+        subsets_in_choice = [
+            _set for _set in subsets if self.__is_set_in_choice(_set, choice)
+        ]
         for a, b in itertools.product(subsets_in_choice, subsets_in_choice):
             if self.__is_set_in_causality((a, b), causality):
                 xl_set.append((a, b))
@@ -76,7 +80,9 @@ class AlphaMining(BaseMining):
         # (a,b) is equal to (a,bb), also b||b, thus a and bb cannot make a pair, only "#" relations can.
         self_loop = set()
         for pair in parallel:
-            if pair == pair[::-1]:  # if we found pairs like (b,b), add b into self-loop sets
+            if (
+                pair == pair[::-1]
+            ):  # if we found pairs like (b,b), add b into self-loop sets
                 self_loop.add(pair[0])
 
         # define a set of to be deleted sets and remove them from yl_set
@@ -89,7 +95,12 @@ class AlphaMining(BaseMining):
         return yl_set
 
     # Step 6
-    def generate_graph(self, spm_threshold, node_freq_threshold_normalized, node_freq_threshold_absolute):
+    def generate_graph(
+        self,
+        spm_threshold,
+        node_freq_threshold_normalized,
+        node_freq_threshold_absolute,
+    ):
 
         self.spm_threshold = spm_threshold
         self.node_freq_threshold_normalized = node_freq_threshold_normalized
@@ -108,7 +119,7 @@ class AlphaMining(BaseMining):
 
         nodes_to_draw = self.__events_to_draw().union(
             self.start_nodes.intersection(self.filtered_events),
-            self.end_nodes.intersection(self.filtered_events)
+            self.end_nodes.intersection(self.filtered_events),
         )
         if not nodes_to_draw:
             nodes_to_draw = set(self.filtered_events)
@@ -123,11 +134,12 @@ class AlphaMining(BaseMining):
             node_stats_map=node_stats_map,
             edge_filter=self.filter_edge,
         )
-        self.graph, self.petri_net, extra_start_nodes, extra_end_nodes = self.graph_converter.build_alpha_graph(
-            data,
-            logger=self.logger,
+        self.graph, self.petri_net, extra_start_nodes, extra_end_nodes = (
+            self.graph_converter.build_alpha_graph(
+                data,
+                logger=self.logger,
+            )
         )
-
 
         self.start_nodes.update(extra_start_nodes)
         self.end_nodes.update(extra_end_nodes)
@@ -184,17 +196,24 @@ class AlphaMining(BaseMining):
         choice = []
         for event1 in unique_events:
             for event2 in unique_events:
-                if (event1 != event2) and ((event1, event2) not in causality) and (
-                        (event2, event1) not in causality) and ((event1, event2) not in parallel):
+                if (
+                    (event1 != event2)
+                    and ((event1, event2) not in causality)
+                    and ((event2, event1) not in causality)
+                    and ((event1, event2) not in parallel)
+                ):
                     choice.append((event1, event2))
         return set(choice)
 
     def generate_footprint(self):
-        footprint = ["All transitions: {}".format(self.events),
-                     "Direct succession: {}".format(self.direct_succession_set),
-                     "Causality: {}".format(self.causality_set),
-                     "Parallel: {}".format(self.parallel_set), "Choice: {}".format(self.choice_set)]
-        return '\n'.join(footprint)
+        footprint = [
+            "All transitions: {}".format(self.events),
+            "Direct succession: {}".format(self.direct_succession_set),
+            "Causality: {}".format(self.causality_set),
+            "Parallel: {}".format(self.parallel_set),
+            "Choice: {}".format(self.choice_set),
+        ]
+        return "\n".join(footprint)
 
     # ALPHA MINER ALGORITHM ESSENTIALS END
     ####################################################################################################################
@@ -275,12 +294,17 @@ class AlphaMining(BaseMining):
                 for node in event:
                     events_to_draw.append(node)
         return set(events_to_draw)
+
     def _calculate_filtered_model_state(self):
         self.direct_succession_set = self._calculate_direct_succession()
         self.causality_set = self._calculate_causality(self.direct_succession_set)
         self.parallel_set = self._calculate_parallel(self.direct_succession_set)
-        self.choice_set = self._calculate_choice(self.filtered_events, self.causality_set, self.parallel_set)
-        self.xl_set = self.generate_set_xl(self.filtered_events, self.choice_set, self.causality_set)
+        self.choice_set = self._calculate_choice(
+            self.filtered_events, self.causality_set, self.parallel_set
+        )
+        self.xl_set = self.generate_set_xl(
+            self.filtered_events, self.choice_set, self.causality_set
+        )
         self.yl_set = self.generate_set_yl(self.xl_set, self.parallel_set)
         self.footprint = self.generate_footprint()
 

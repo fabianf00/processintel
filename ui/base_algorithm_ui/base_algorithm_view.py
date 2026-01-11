@@ -86,7 +86,9 @@ class BaseAlgorithmView(BaseView):
             happy_path_traces = model.get_happy_path_traces()
             if len(happy_path_traces) > 1:
                 current_index = st.session_state.get("happy_path_variant_index", 0)
-                if not isinstance(current_index, int) or current_index not in range(len(happy_path_traces)):
+                if not isinstance(current_index, int) or current_index not in range(
+                    len(happy_path_traces)
+                ):
                     st.session_state.happy_path_variant_index = 0
                 st.selectbox(
                     "Happy Path Variant",
@@ -96,7 +98,9 @@ class BaseAlgorithmView(BaseView):
                     help="Select which most frequent trace to use for highlighting.",
                 )
             variant_index = st.session_state.get("happy_path_variant_index", 0)
-            if not isinstance(variant_index, int) or variant_index not in range(len(happy_path_traces)):
+            if not isinstance(variant_index, int) or variant_index not in range(
+                len(happy_path_traces)
+            ):
                 variant_index = 0
                 st.session_state.happy_path_variant_index = variant_index
             if show_happy_path:

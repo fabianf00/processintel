@@ -22,13 +22,15 @@ class TestGeneticMining(unittest.TestCase):
             ("A", "B", "H"): 1,
             ("A", "C", "H"): 1,
             ("A", "D", "E", "F", "G", "H"): 1,
-            ("A", "D", "F", "E", "G", "H"): 1
+            ("A", "D", "F", "E", "G", "H"): 1,
         }
         self.gm = GeneticMining(self.log)
 
     def test_initialize_dependency_matrix(self):
         self.gm._initialize_dependency_matrix()
-        self.assertTrue(self.gm.dependency_matrix, "Dependency matrix was not initialized")
+        self.assertTrue(
+            self.gm.dependency_matrix, "Dependency matrix was not initialized"
+        )
         self.assertTrue(self.gm.start_measures, "Start measures not set")
         self.assertTrue(self.gm.end_measures, "End measures not set")
 
@@ -66,17 +68,31 @@ class TestGeneticMining(unittest.TestCase):
 
         all_elems = set()
         for s in resolved_set_1:
-            self.assertTrue(all_elems.isdisjoint(s), f"Overlap detected in Set 1 with subset {s}")
+            self.assertTrue(
+                all_elems.isdisjoint(s), f"Overlap detected in Set 1 with subset {s}"
+            )
             all_elems |= s
 
-        merged_set_2 = [{1, 2, 3}, {2, 3, 4}, {3, 4, 5}, {1, 5}, {2, 5}, {4, 6}, {5, 6}, {6, 7}, {1, 7}]
+        merged_set_2 = [
+            {1, 2, 3},
+            {2, 3, 4},
+            {3, 4, 5},
+            {1, 5},
+            {2, 5},
+            {4, 6},
+            {5, 6},
+            {6, 7},
+            {1, 7},
+        ]
         resolved_set_2 = self.gm._resolve_overlaps(merged_set_2)
 
         self.logger.debug(f"Resolved Set 2: {resolved_set_2}")
 
         all_elems = set()
         for s in resolved_set_2:
-            self.assertTrue(all_elems.isdisjoint(s), f"Overlap detected in Set 2 with subset {s}")
+            self.assertTrue(
+                all_elems.isdisjoint(s), f"Overlap detected in Set 2 with subset {s}"
+            )
             all_elems |= s
 
     def test_generate_graph_empty_events(self):
@@ -116,9 +132,18 @@ class TestGeneticMining(unittest.TestCase):
                 "G": [{"H"}],
                 "H": [set()],
             },
-            "C": {("A", "B"), ("A", "C"), ("A", "D"),
-                  ("D", "E"), ("D", "F"), ("E", "G"),
-                  ("F", "G"), ("G", "H"), ("B", "H"), ("C", "H")}
+            "C": {
+                ("A", "B"),
+                ("A", "C"),
+                ("A", "D"),
+                ("D", "E"),
+                ("D", "F"),
+                ("E", "G"),
+                ("F", "G"),
+                ("G", "H"),
+                ("B", "H"),
+                ("C", "H"),
+            },
         }
         gm.start_nodes = {"A"}
         gm.end_nodes = {"H"}
@@ -132,10 +157,17 @@ class TestGeneticMining(unittest.TestCase):
 
         for trace in traces:
             with self.subTest(trace=trace):
-                parsed_count, is_completed = gm._parse_trace_token_game(individual, trace)
+                parsed_count, is_completed = gm._parse_trace_token_game(
+                    individual, trace
+                )
 
-                self.assertEqual(parsed_count, len(trace), f"Trace {trace} was not fully parsed.")
-                self.assertTrue(is_completed, f"Trace {trace} did not complete correctly (tokens stuck).")
+                self.assertEqual(
+                    parsed_count, len(trace), f"Trace {trace} was not fully parsed."
+                )
+                self.assertTrue(
+                    is_completed,
+                    f"Trace {trace} did not complete correctly (tokens stuck).",
+                )
 
     def test_parse_trace_token_game_deadlock(self):
         log = {
@@ -168,9 +200,18 @@ class TestGeneticMining(unittest.TestCase):
                 "G": [{"H"}],
                 "H": [set()],
             },
-            "C": {("A", "B"), ("A", "C"), ("A", "D"),
-                  ("D", "E"), ("D", "F"), ("E", "G"),
-                  ("F", "G"), ("G", "H"), ("B", "H"), ("C", "H")}
+            "C": {
+                ("A", "B"),
+                ("A", "C"),
+                ("A", "D"),
+                ("D", "E"),
+                ("D", "F"),
+                ("E", "G"),
+                ("F", "G"),
+                ("G", "H"),
+                ("B", "H"),
+                ("C", "H"),
+            },
         }
         gm.start_nodes = {"A"}
         gm.end_nodes = {"H"}
@@ -182,9 +223,16 @@ class TestGeneticMining(unittest.TestCase):
 
         for trace in traces:
             with self.subTest(trace=trace):
-                parsed_count, is_completed = gm._parse_trace_token_game(individual, trace)
-                self.assertEqual(parsed_count, len(trace) - 2, f"Trace {trace} was fully parsed.")
-                self.assertFalse(is_completed, f"Trace {trace} did not complete correctly (tokens stuck).") 
+                parsed_count, is_completed = gm._parse_trace_token_game(
+                    individual, trace
+                )
+                self.assertEqual(
+                    parsed_count, len(trace) - 2, f"Trace {trace} was fully parsed."
+                )
+                self.assertFalse(
+                    is_completed,
+                    f"Trace {trace} did not complete correctly (tokens stuck).",
+                )
 
     def test_parse_trace_token_game_deadlock_set(self):
         log = {
@@ -217,9 +265,18 @@ class TestGeneticMining(unittest.TestCase):
                 "G": [{"H"}],
                 "H": [set()],
             },
-            "C": {("A", "B"), ("A", "C"), ("A", "D"),
-                  ("D", "E"), ("D", "F"), ("E", "G"),
-                  ("F", "G"), ("G", "H"), ("B", "H"), ("C", "H")}
+            "C": {
+                ("A", "B"),
+                ("A", "C"),
+                ("A", "D"),
+                ("D", "E"),
+                ("D", "F"),
+                ("E", "G"),
+                ("F", "G"),
+                ("G", "H"),
+                ("B", "H"),
+                ("C", "H"),
+            },
         }
         gm.start_nodes = {"A"}
         gm.end_nodes = {"H"}
@@ -231,16 +288,23 @@ class TestGeneticMining(unittest.TestCase):
 
         for trace in traces:
             with self.subTest(trace=trace):
-                parsed_count, is_completed = gm._parse_trace_token_game(individual, trace)
-                self.assertEqual(parsed_count, len(trace) - 2, f"Trace {trace} was fully parsed.")
-                self.assertFalse(is_completed, f"Trace {trace} did not complete correctly (tokens stuck).") # TODO: change error message
+                parsed_count, is_completed = gm._parse_trace_token_game(
+                    individual, trace
+                )
+                self.assertEqual(
+                    parsed_count, len(trace) - 2, f"Trace {trace} was fully parsed."
+                )
+                self.assertFalse(
+                    is_completed,
+                    f"Trace {trace} did not complete correctly (tokens stuck).",
+                )  # TODO: change error message
 
     def test_parse_trace_token_game_filtered(self):
         individual = {
             "activities": {"A", "H"},
             "I": {"A": [set()], "H": [{"A"}]},
             "O": {"A": [{"H"}], "H": [set()]},
-            "C": {("A", "H")}
+            "C": {("A", "H")},
         }
         self.gm.start_nodes = {"A"}
         self.gm.end_nodes = {"H"}
@@ -248,18 +312,20 @@ class TestGeneticMining(unittest.TestCase):
         trace = ["A", "H"]
         parsed_count, is_completed = self.gm._parse_trace_token_game(individual, trace)
 
-        self.assertEqual(parsed_count, len(trace),
-                         "filtered trace was not fully parsed.")
+        self.assertEqual(
+            parsed_count, len(trace), "filtered trace was not fully parsed."
+        )
 
-        self.assertTrue(is_completed,
-                        "trace was incorrectly marked as not properly completed.")
+        self.assertTrue(
+            is_completed, "trace was incorrectly marked as not properly completed."
+        )
 
     def test_parse_trace_token_game_L1L(self):
         individual = {
             "activities": {"A"},
             "I": {"A": [set(), {"A"}]},
             "O": {"A": [{"A"}, set()]},
-            "C": {("A", "A")}
+            "C": {("A", "A")},
         }
         self.gm.start_nodes = {"A"}
         self.gm.end_nodes = {"A"}
@@ -267,18 +333,22 @@ class TestGeneticMining(unittest.TestCase):
         trace = ["A"]
         parsed_count, is_completed = self.gm._parse_trace_token_game(individual, trace)
 
-        self.assertEqual(parsed_count, len(trace),
-                         "L1L trace was not fully parsed (self-loop not handled correctly).")
+        self.assertEqual(
+            parsed_count,
+            len(trace),
+            "L1L trace was not fully parsed (self-loop not handled correctly).",
+        )
 
-        self.assertFalse(is_completed,
-                         "L1L trace was incorrectly marked as properly completed.")
+        self.assertFalse(
+            is_completed, "L1L trace was incorrectly marked as properly completed."
+        )
 
     def test_parse_trace_token_game_L1L_2(self):
         individual = {
             "activities": {"A", "B", "C"},
             "I": {"A": [set()], "B": [{"A", "B"}], "C": [{"B"}]},
             "O": {"A": [{"B"}], "B": [{"B", "C"}], "C": [set()]},
-            "C": {("A", "B"), ("B", "B"), ("B", "C")}
+            "C": {("A", "B"), ("B", "B"), ("B", "C")},
         }
         self.gm.start_nodes = {"A"}
         self.gm.end_nodes = {"C"}
@@ -286,18 +356,20 @@ class TestGeneticMining(unittest.TestCase):
         trace = ["A", "B", "B", "C"]
         parsed_count, is_completed = self.gm._parse_trace_token_game(individual, trace)
 
-        self.assertEqual(parsed_count, len(trace),
-                         "L1L trace was not fully parsed (self-loop not handled correctly).")
+        self.assertEqual(
+            parsed_count,
+            len(trace),
+            "L1L trace was not fully parsed (self-loop not handled correctly).",
+        )
 
-        self.assertTrue(is_completed,
-                         "L1L trace was incorrectly marked as incomplete.")
+        self.assertTrue(is_completed, "L1L trace was incorrectly marked as incomplete.")
 
     def test_parse_trace_token_game_L2L(self):
         individual = {
             "activities": {"A", "B"},
             "I": {"A": [set(), {"B"}], "B": [{"A"}]},
             "O": {"A": [{"B"}], "B": [{"A"}, set()]},
-            "C": {("A", "B"), ("B", "A")}
+            "C": {("A", "B"), ("B", "A")},
         }
         self.gm.start_nodes = {"A"}
         self.gm.end_nodes = {"B"}
@@ -305,91 +377,219 @@ class TestGeneticMining(unittest.TestCase):
         trace = ["A", "B"]
         parsed_count, is_completed = self.gm._parse_trace_token_game(individual, trace)
 
-        self.assertNotEqual(parsed_count, len(trace),
-                            "L2L trace was fully parsed (two-step loop not handled correctly).")
+        self.assertNotEqual(
+            parsed_count,
+            len(trace),
+            "L2L trace was fully parsed (two-step loop not handled correctly).",
+        )
 
-        self.assertFalse(is_completed,
-                    
-                         "L2L trace was incorrectly marked as properly completed.")
+        self.assertFalse(
+            is_completed, "L2L trace was incorrectly marked as properly completed."
+        )
 
     def test_and_or_semantics(self):
         # OR case: Z can fire if A OR B fired
         individual_or = {
             "activities": {"X", "A", "B", "Z"},
-            "I": {"X": [set()],"A": [{"X"}],"B": [{"X"}],"Z": [{"A", "B"}],},
-            "O": {"X": [{"A", "B"}],"A": [{"Z"}],"B": [{"Z"}],"Z": [set()],},
+            "I": {
+                "X": [set()],
+                "A": [{"X"}],
+                "B": [{"X"}],
+                "Z": [{"A", "B"}],
+            },
+            "O": {
+                "X": [{"A", "B"}],
+                "A": [{"Z"}],
+                "B": [{"Z"}],
+                "Z": [set()],
+            },
             "C": {("X", "A"), ("X", "B"), ("A", "Z"), ("B", "Z")},
         }
         self.gm.start_nodes = {"X"}
         self.gm.end_nodes = {"Z"}
-        
+
         trace_or = ["X", "A", "Z"]
-        parsed_count_or, completed_or = self.gm._parse_trace_token_game(individual_or, trace_or)
-        self.assertEqual(parsed_count_or, len(trace_or), "OR semantics failed: A should enable Z")
+        parsed_count_or, completed_or = self.gm._parse_trace_token_game(
+            individual_or, trace_or
+        )
+        self.assertEqual(
+            parsed_count_or, len(trace_or), "OR semantics failed: A should enable Z"
+        )
         self.assertTrue(completed_or)
 
         # AND case: Z requires both A and B
         individual_and = {
             "activities": {"X", "A", "B", "Z"},
-            "I": {"X": [set()],"A": [{"X"}],"B": [{"X"}],"Z": [{"A"}, {"B"}],},
-            "O": {"X": [{"A"}, {"B"}],"A": [{"Z"}],"B": [{"Z"}],"Z": [set()],},
+            "I": {
+                "X": [set()],
+                "A": [{"X"}],
+                "B": [{"X"}],
+                "Z": [{"A"}, {"B"}],
+            },
+            "O": {
+                "X": [{"A"}, {"B"}],
+                "A": [{"Z"}],
+                "B": [{"Z"}],
+                "Z": [set()],
+            },
             "C": {("X", "A"), ("X", "B"), ("A", "Z"), ("B", "Z")},
         }
-        trace_and_valid = ["X", "A", "B", "Z"] # both provided
-        parsed_count_and, completed_and = self.gm._parse_trace_token_game(individual_and, trace_and_valid)
-        self.assertEqual(parsed_count_and, len(trace_and_valid), "AND semantics failed: A and B should enable Z")
+        trace_and_valid = ["X", "A", "B", "Z"]  # both provided
+        parsed_count_and, completed_and = self.gm._parse_trace_token_game(
+            individual_and, trace_and_valid
+        )
+        self.assertEqual(
+            parsed_count_and,
+            len(trace_and_valid),
+            "AND semantics failed: A and B should enable Z",
+        )
         self.assertTrue(completed_and)
 
-        trace_and_invalid = ["X", "A", "Z"] # only A, not B
-        parsed_count_and_inv, completed_and_inv = self.gm._parse_trace_token_game(individual_and, trace_and_invalid)
-        self.assertLess(parsed_count_and_inv, len(trace_and_invalid), "AND semantics failed: Z should not fire without both inputs")
+        trace_and_invalid = ["X", "A", "Z"]  # only A, not B
+        parsed_count_and_inv, completed_and_inv = self.gm._parse_trace_token_game(
+            individual_and, trace_and_invalid
+        )
+        self.assertLess(
+            parsed_count_and_inv,
+            len(trace_and_invalid),
+            "AND semantics failed: Z should not fire without both inputs",
+        )
         self.assertFalse(completed_and_inv)
 
         # AND-of-ORs case: Z requires (A OR B) AND C
         individual_andor = {
             "activities": {"X", "A", "B", "C", "Z"},
-            "I": {"X": [set()],"A": [{"X"}],"B": [{"X"}],"C": [{"X"}],"Z": [{"A", "B"}, {"C"}],},
-            "O": {"X": [{"A", "B"}, {"C"}],"A": [{"Z"}],"B": [{"Z"}],"C": [{"Z"}],"Z": [set()],},
-            "C": {("X", "A"),("X", "B"),("X", "C"),("A", "Z"),("B", "Z"),("C", "Z"),},
+            "I": {
+                "X": [set()],
+                "A": [{"X"}],
+                "B": [{"X"}],
+                "C": [{"X"}],
+                "Z": [{"A", "B"}, {"C"}],
+            },
+            "O": {
+                "X": [{"A", "B"}, {"C"}],
+                "A": [{"Z"}],
+                "B": [{"Z"}],
+                "C": [{"Z"}],
+                "Z": [set()],
+            },
+            "C": {
+                ("X", "A"),
+                ("X", "B"),
+                ("X", "C"),
+                ("A", "Z"),
+                ("B", "Z"),
+                ("C", "Z"),
+            },
         }
         trace_andor_valid = ["X", "A", "C", "Z"]
-        parsed_count_andor, completed_andor = self.gm._parse_trace_token_game(individual_andor, trace_andor_valid)
-        self.assertEqual(parsed_count_andor, len(trace_andor_valid), "AND-of-ORs semantics failed: (A or B) and C should enable Z")
+        parsed_count_andor, completed_andor = self.gm._parse_trace_token_game(
+            individual_andor, trace_andor_valid
+        )
+        self.assertEqual(
+            parsed_count_andor,
+            len(trace_andor_valid),
+            "AND-of-ORs semantics failed: (A or B) and C should enable Z",
+        )
         self.assertTrue(completed_andor)
 
-        trace_andor_invalid = ["X", "A", "Z"] # missing C
-        parsed_count_andor_inv, completed_andor_inv = self.gm._parse_trace_token_game(individual_andor, trace_andor_invalid)
-        
-        self.assertLess(parsed_count_andor_inv, len(trace_andor_invalid), "AND-of-ORs semantics failed: Z should not fire without C")
+        trace_andor_invalid = ["X", "A", "Z"]  # missing C
+        parsed_count_andor_inv, completed_andor_inv = self.gm._parse_trace_token_game(
+            individual_andor, trace_andor_invalid
+        )
+
+        self.assertLess(
+            parsed_count_andor_inv,
+            len(trace_andor_invalid),
+            "AND-of-ORs semantics failed: Z should not fire without C",
+        )
         self.assertFalse(completed_andor_inv)
 
         # Multi-OR: Z can fire if any of A, B, or C fired
         individual_multi_or = {
             "activities": {"X", "A", "B", "C", "Z"},
-            "I": { "X": [set()],"A": [{"X"}],"B": [{"X"}],"C": [{"X"}],"Z": [{"A", "B", "C"}],},
-            "O": {"X": [{"A", "B", "C"}],"A": [{"Z"}],"B": [{"Z"}],"C": [{"Z"}],"Z": [set()],},
-            "C": {("X", "A"),("X", "B"),("X", "C"),("A", "Z"),("B", "Z"),("C", "Z"),},
+            "I": {
+                "X": [set()],
+                "A": [{"X"}],
+                "B": [{"X"}],
+                "C": [{"X"}],
+                "Z": [{"A", "B", "C"}],
+            },
+            "O": {
+                "X": [{"A", "B", "C"}],
+                "A": [{"Z"}],
+                "B": [{"Z"}],
+                "C": [{"Z"}],
+                "Z": [set()],
+            },
+            "C": {
+                ("X", "A"),
+                ("X", "B"),
+                ("X", "C"),
+                ("A", "Z"),
+                ("B", "Z"),
+                ("C", "Z"),
+            },
         }
         trace_multi_or = ["X", "B", "Z"]
-        parsed_count_multi_or, completed_multi_or = self.gm._parse_trace_token_game(individual_multi_or, trace_multi_or)
-        self.assertEqual(parsed_count_multi_or, len(trace_multi_or), "Multi-OR semantics failed: any of A,B,C should enable Z")
+        parsed_count_multi_or, completed_multi_or = self.gm._parse_trace_token_game(
+            individual_multi_or, trace_multi_or
+        )
+        self.assertEqual(
+            parsed_count_multi_or,
+            len(trace_multi_or),
+            "Multi-OR semantics failed: any of A,B,C should enable Z",
+        )
         self.assertTrue(completed_multi_or)
 
         # Multi-AND: Z requires A AND B AND C
         individual_multi_and = {
             "activities": {"X", "A", "B", "C", "Z"},
-            "I": {"X": [set()],"A": [{"X"}],"B": [{"X"}],"C": [{"X"}],"Z": [{"A"}, {"B"}, {"C"}],},
-            "O": {"X": [{"A"}, {"B"}, {"C"}],"A": [{"Z"}],"B": [{"Z"}],"C": [{"Z"}],"Z": [set()],},
-            "C": {("X", "A"),("X", "B"),("X", "C"),("A", "Z"),("B", "Z"),("C", "Z"),},
+            "I": {
+                "X": [set()],
+                "A": [{"X"}],
+                "B": [{"X"}],
+                "C": [{"X"}],
+                "Z": [{"A"}, {"B"}, {"C"}],
+            },
+            "O": {
+                "X": [{"A"}, {"B"}, {"C"}],
+                "A": [{"Z"}],
+                "B": [{"Z"}],
+                "C": [{"Z"}],
+                "Z": [set()],
+            },
+            "C": {
+                ("X", "A"),
+                ("X", "B"),
+                ("X", "C"),
+                ("A", "Z"),
+                ("B", "Z"),
+                ("C", "Z"),
+            },
         }
         trace_multi_and_valid = ["X", "A", "B", "C", "Z"]
-        parsed_count_multi_and, completed_multi_and = self.gm._parse_trace_token_game(individual_multi_and, trace_multi_and_valid)
-        self.assertEqual(parsed_count_multi_and, len(trace_multi_and_valid), "Multi-AND semantics failed: all three inputs should enable Z")
+        parsed_count_multi_and, completed_multi_and = self.gm._parse_trace_token_game(
+            individual_multi_and, trace_multi_and_valid
+        )
+        self.assertEqual(
+            parsed_count_multi_and,
+            len(trace_multi_and_valid),
+            "Multi-AND semantics failed: all three inputs should enable Z",
+        )
         self.assertTrue(completed_multi_and)
 
-        trace_multi_and_invalid = ["X", "A", "B", "Z"] # missing C
-        parsed_count_multi_and_inv, completed_multi_and_inv = self.gm._parse_trace_token_game(individual_multi_and, trace_multi_and_invalid)
-        self.assertLess(parsed_count_multi_and_inv, len(trace_multi_and_invalid), "Multi-AND semantics failed: Z should not fire without C")
+        trace_multi_and_invalid = ["X", "A", "B", "Z"]  # missing C
+        parsed_count_multi_and_inv, completed_multi_and_inv = (
+            self.gm._parse_trace_token_game(
+                individual_multi_and, trace_multi_and_invalid
+            )
+        )
+        self.assertLess(
+            parsed_count_multi_and_inv,
+            len(trace_multi_and_invalid),
+            "Multi-AND semantics failed: Z should not fire without C",
+        )
         self.assertFalse(completed_multi_and_inv)
 
     def test_fitness_perfect_example_from_paper(self):
@@ -423,13 +623,25 @@ class TestGeneticMining(unittest.TestCase):
                 "G": [{"H"}],
                 "H": [set()],
             },
-            "C": {("A", "B"), ("A", "C"), ("A", "D"),
-                  ("D", "E"), ("D", "F"), ("E", "G"),
-                  ("F", "G"), ("G", "H"), ("B", "H"), ("C", "H")}
+            "C": {
+                ("A", "B"),
+                ("A", "C"),
+                ("A", "D"),
+                ("D", "E"),
+                ("D", "F"),
+                ("E", "G"),
+                ("F", "G"),
+                ("G", "H"),
+                ("B", "H"),
+                ("C", "H"),
+            },
         }
 
         fitness = gm._evaluate_fitness(individual)
-        self.assertEqual(fitness, 1.0, msg=f"Expected perfect fitness=1.0 but got {fitness}")
+        self.assertEqual(
+            fitness, 1.0, msg=f"Expected perfect fitness=1.0 but got {fitness}"
+        )
+
 
 def read(filename, timeLabel="Timestamp", caseLabel="Case ID", eventLabel="Activity"):
     dataframe_transformations = DataframeTransformations()

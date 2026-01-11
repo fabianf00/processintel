@@ -35,8 +35,14 @@ class InductiveMining(BaseMining):
         self.petri_converter = PetriNetConverter(self.petri_toolkit)
         self.bpmn_converter = BPMNConverter()
 
-    def generate_graph(self, spm_threshold: float, node_freq_threshold_normalized: float,
-                       node_freq_threshold_absolute: int, traces_threshold: float, use_petri_net: bool = False):
+    def generate_graph(
+        self,
+        spm_threshold: float,
+        node_freq_threshold_normalized: float,
+        node_freq_threshold_absolute: int,
+        traces_threshold: float,
+        use_petri_net: bool = False,
+    ):
         """Generate a graph from the log using the Inductive Mining algorithm.
 
         Parameters
@@ -59,7 +65,6 @@ class InductiveMining(BaseMining):
         self.node_freq_threshold_normalized = node_freq_threshold_normalized
         self.node_freq_threshold_absolute = node_freq_threshold_absolute
         self.use_petri_net = use_petri_net
-
 
         self.recalculate_model_filters()
 
@@ -84,14 +89,16 @@ class InductiveMining(BaseMining):
         self.logger.debug(f"Events to remove: {events_to_remove}")
         min_traces_frequency = self.calculate_minimum_traces_frequency(traces_threshold)
 
-        filtered_log = filter_traces(self.node_frequency_filtered_log, min_traces_frequency)
+        filtered_log = filter_traces(
+            self.node_frequency_filtered_log, min_traces_frequency
+        )
 
         self.filtered_log = filtered_log
 
         self.logger.info("Start Inductive Mining")
         process_tree = self.inductive_mining(self.filtered_log)
         node_stats_map = {stat["node"]: stat for stat in self.get_node_statistics()}
-        
+
         bpmn_data = InductiveBPMNData(
             process_tree=process_tree,
             filtered_events=self.filtered_events,
@@ -107,11 +114,13 @@ class InductiveMining(BaseMining):
                 filtered_appearance_freqs=self.filtered_appearance_freqs,
                 node_stats_map=node_stats_map,
             )
-            self.graph, self.petri_net = self.petri_converter.build_inductive_graph(petri_data, logger=self.logger)
+            self.graph, self.petri_net = self.petri_converter.build_inductive_graph(
+                petri_data, logger=self.logger
+            )
             return
 
         self.graph = self.bpmn_converter.build_inductive_graph(bpmn_data)
-     
+
     def inductive_mining(self, log):
         """Generate a process tree from the log using the Inductive Mining algorithm.
         This is a recursive function that generates the process tree from the log,
@@ -253,7 +262,9 @@ class InductiveMining(BaseMining):
         set[str]
             A set containing all unique events in the log.
         """
-        return set(event for case in log for event in case if event in self.filtered_events)
+        return set(
+            event for case in log for event in case if event in self.filtered_events
+        )
 
     def get_traces_threshold(self) -> float:
         """Get the traces threshold used for filtering the log.

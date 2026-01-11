@@ -70,15 +70,32 @@ class TestHeuristic(unittest.TestCase):
         heuristicMining.generate_graph(0.5, 1, 40, 0.5, 20, 0.5)
         self.__check_graph_integrity(heuristicMining.get_graph())
 
-    def __run_test_csv(self, spm_threshold, node_freq_threshold, edge_freq_threshold, dependency_threshold,
-                       min_frequency):
+    def __run_test_csv(
+        self,
+        spm_threshold,
+        node_freq_threshold,
+        edge_freq_threshold,
+        dependency_threshold,
+        min_frequency,
+    ):
         heuristicMining = HeuristicMining(read("tests/testcsv/test_csv.csv"))
-        heuristicMining.generate_graph(spm_threshold, node_freq_threshold, 40, edge_freq_threshold, 20,
-                                       dependency_threshold)
+        heuristicMining.generate_graph(
+            spm_threshold,
+            node_freq_threshold,
+            40,
+            edge_freq_threshold,
+            20,
+            dependency_threshold,
+        )
         self.__check_graph_integrity(heuristicMining.get_graph())
 
-    def __run_CallcenterExample_csv(self, spm_threshold, node_freq_threshold, edge_freq_threshold,
-                                    dependency_threshold):
+    def __run_CallcenterExample_csv(
+        self,
+        spm_threshold,
+        node_freq_threshold,
+        edge_freq_threshold,
+        dependency_threshold,
+    ):
         heuristicMining = HeuristicMining(
             read(
                 "tests/testcsv/CallcenterExample.csv",
@@ -87,8 +104,14 @@ class TestHeuristic(unittest.TestCase):
                 timeLabel="Start Date",
             )
         )
-        heuristicMining.generate_graph(spm_threshold, node_freq_threshold, 40, edge_freq_threshold, 20,
-                                       dependency_threshold)
+        heuristicMining.generate_graph(
+            spm_threshold,
+            node_freq_threshold,
+            40,
+            edge_freq_threshold,
+            20,
+            dependency_threshold,
+        )
         self.__check_graph_integrity(heuristicMining.get_graph())
 
     def __check_graph_integrity(self, graph: BaseGraph):

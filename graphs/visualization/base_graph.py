@@ -13,10 +13,10 @@ class Node:
     """Node class for the graph. Each node has an id, a label and a dictionary of data."""
 
     def __init__(
-            self,
-            id: str | int,
-            label: str = "",
-            data: dict[str, str | int | float] = None,
+        self,
+        id: str | int,
+        label: str = "",
+        data: dict[str, str | int | float] = None,
     ) -> None:
         """Initializes the Node object.
 
@@ -90,11 +90,11 @@ class Edge:
     """Edge class for the graph. Each edge has a source, a destination and a weight."""
 
     def __init__(
-            self,
-            source: str | int,
-            destination: str | int,
-            weight: int = 1,
-            data: dict[str, str | int | float] | None = None,
+        self,
+        source: str | int,
+        destination: str | int,
+        weight: int = 1,
+        data: dict[str, str | int | float] | None = None,
     ) -> None:
         """Initializes the Edge object.
 
@@ -143,8 +143,8 @@ class BaseGraph:
     """
 
     def __init__(
-            self,
-            **graph_attributes,
+        self,
+        **graph_attributes,
     ) -> None:
         """Initializes the BaseGraph object.
 
@@ -174,12 +174,12 @@ class BaseGraph:
         """Remove all node highlighting."""
         self._highlighted_node_ids = set()
 
-    
     def highlight_happy_path(self, happy_path_events: set[str] | list[str]) -> None:
         """Highlight nodes of to the given Happy Path activities.
 
         Direct match -> highlight nodes whose id equals an activity label.
-        - Fuzzy miner clusters -> highlight cluster nodes if they contain a Happy Path activity."""
+        - Fuzzy miner clusters -> highlight cluster nodes if they contain a Happy Path activity.
+        """
         event_set = {str(event) for event in happy_path_events}
         highlighted = {event for event in event_set if self.contains_node(event)}
 
@@ -198,11 +198,11 @@ class BaseGraph:
         self._highlighted_node_ids = highlighted
 
     def add_node(
-            self,
-            id: str | int,
-            label: str = "",
-            data: dict[str, str | int | float] = None,
-            **node_attributes,
+        self,
+        id: str | int,
+        label: str = "",
+        data: dict[str, str | int | float] = None,
+        **node_attributes,
     ) -> None:
         """Adds a node to the graph. If the node id contains the colon, it is replaced with the colon substitute.
 
@@ -264,11 +264,11 @@ class BaseGraph:
         self.add_node(id, shape="doublecircle", style="filled, bold", fillcolor="red")
 
     def add_starting_edges(
-            self,
-            nodes: list[str | int],
-            starting_node: str = "Start",
-            weights: list[int] = None,
-            **edge_attributes,
+        self,
+        nodes: list[str | int],
+        starting_node: str = "Start",
+        weights: list[int] = None,
+        **edge_attributes,
     ) -> None:
         """Adds edges from the start node to the nodes in the list.
 
@@ -299,11 +299,11 @@ class BaseGraph:
                 self.add_edge(starting_node, node, weight=None, **edge_attributes)
 
     def add_ending_edges(
-            self,
-            nodes: list[str | int],
-            ending_node: str = "End",
-            weights: list[int] = None,
-            **edge_attributes,
+        self,
+        nodes: list[str | int],
+        ending_node: str = "End",
+        weights: list[int] = None,
+        **edge_attributes,
     ) -> None:
         """Adds edges from the nodes in the list to the end node.
 
@@ -331,12 +331,12 @@ class BaseGraph:
                 self.add_edge(node, ending_node, weight=None, **edge_attributes)
 
     def add_edge(
-            self,
-            source_id: str | int,
-            target_id: str | int,
-            weight: float = 1.0,
-            data: dict[str, str | int | float] | None = None,
-            **edge_attributes,
+        self,
+        source_id: str | int,
+        target_id: str | int,
+        weight: float = 1.0,
+        data: dict[str, str | int | float] | None = None,
+        **edge_attributes,
     ) -> None:
         """Adds an edge to the graph.
 

@@ -25,7 +25,6 @@ class InductiveMinerController(BaseAlgorithmController):
         self.traces_threshold = None
         self.use_petri_net = False
 
-
         if views is None:
             views = [InductiveMinerView()]
 
@@ -54,14 +53,16 @@ class InductiveMinerController(BaseAlgorithmController):
 
         # set instance variables from session state
         self.traces_threshold = st.session_state.traces_threshold
-        
+
         if "inductive_use_petri_net" not in st.session_state:
             st.session_state.inductive_use_petri_net = self.use_petri_net
         self.use_petri_net = st.session_state.inductive_use_petri_net
 
     def perform_mining(self) -> None:
         """Performs the mining of the Inductive Miner algorithm."""
-        super().perform_mining(traces_threshold=self.traces_threshold, use_petri_net=self.use_petri_net)
+        super().perform_mining(
+            traces_threshold=self.traces_threshold, use_petri_net=self.use_petri_net
+        )
 
     def have_parameters_changed(self) -> bool:
         """Checks if the algorithm parameters have changed.
@@ -72,10 +73,9 @@ class InductiveMinerController(BaseAlgorithmController):
             True if the algorithm parameters have changed, False otherwise.
         """
         return (
-                super().have_parameters_changed()
-                or self.mining_model.get_traces_threshold() != self.traces_threshold
-                or getattr(self.mining_model, 'use_petri_net', False) != self.use_petri_net
-
+            super().have_parameters_changed()
+            or self.mining_model.get_traces_threshold() != self.traces_threshold
+            or getattr(self.mining_model, "use_petri_net", False) != self.use_petri_net
         )
 
     def get_sidebar_values(self) -> dict[str, tuple[int | float, int | float]]:
@@ -88,8 +88,10 @@ class InductiveMinerController(BaseAlgorithmController):
             The keys of the dictionary are equal to the keys of the sliders.
         """
         sidebar_values = super().get_sidebar_values()
-        sidebar_values.update({
-            "traces_threshold": (0.0, 1.0),
-        })
+        sidebar_values.update(
+            {
+                "traces_threshold": (0.0, 1.0),
+            }
+        )
 
         return sidebar_values

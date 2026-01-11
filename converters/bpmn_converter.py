@@ -3,6 +3,7 @@ from typing import Any
 
 from graphs.visualization import BPMNGraph
 
+
 @dataclass
 class InductiveBPMNData:
     process_tree: Any
@@ -10,7 +11,8 @@ class InductiveBPMNData:
     filtered_appearance_freqs: dict[str, int]
     node_sizes: dict[str, tuple[float, float]]
     node_stats_map: dict[str, dict]
-    
+
+
 class BPMNConverter:
 
     @staticmethod

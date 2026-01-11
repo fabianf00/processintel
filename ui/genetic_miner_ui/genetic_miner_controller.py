@@ -10,7 +10,9 @@ from ui.genetic_miner_ui.genetic_miner_view import GeneticMinerView
 class GeneticMinerController(BaseAlgorithmController):
     """Controller for the Genetic Miner algorithm."""
 
-    def __init__(self, views=None, mining_model_class=None, dataframe_transformations=None):
+    def __init__(
+        self, views=None, mining_model_class=None, dataframe_transformations=None
+    ):
         """Initializes the Genetic Miner controller.
 
         Parameters
@@ -105,8 +107,8 @@ class GeneticMinerController(BaseAlgorithmController):
         """
 
         return (
-                st.session_state.get("rerun_genetic_miner", False)
-                or super().have_parameters_changed()
+            st.session_state.get("rerun_genetic_miner", False)
+            or super().have_parameters_changed()
         )
 
     def get_sidebar_values(self) -> dict[str, tuple[int | float, int | float]]:
@@ -119,22 +121,30 @@ class GeneticMinerController(BaseAlgorithmController):
             The keys of the dictionary are equal to the keys of the sliders.
         """
         sidebar_values = super().get_sidebar_values()
-        sidebar_values.update({
-            "crossover_rate": (0.0, 1.0),
-            "mutation_rate": (0.0, 0.99),
-            "elitism_rate": (0.0, 0.99),
-            "tournament_size": (2, min(20, self.population_size)),
-            "power_value": (1, 9),
-            "fitness_threshold": (0.0, 1.0),
-        })
+        sidebar_values.update(
+            {
+                "crossover_rate": (0.0, 1.0),
+                "mutation_rate": (0.0, 0.99),
+                "elitism_rate": (0.0, 0.99),
+                "tournament_size": (2, min(20, self.population_size)),
+                "power_value": (1, 9),
+                "fitness_threshold": (0.0, 1.0),
+            }
+        )
         return sidebar_values
 
     def perform_mining(self) -> None:
         """Performs the mining of the Genetic Miner algorithm using the current filter parameters."""
-        super().perform_mining(population_size=self.population_size, max_generations=self.max_generations,
-                               crossover_rate=self.crossover_rate, mutation_rate=self.mutation_rate,
-                               elitism_rate=self.elitism_rate, tournament_size=self.tournament_size,
-                               power_value=self.power_value, fitness_threshold=self.fitness_threshold)
+        super().perform_mining(
+            population_size=self.population_size,
+            max_generations=self.max_generations,
+            crossover_rate=self.crossover_rate,
+            mutation_rate=self.mutation_rate,
+            elitism_rate=self.elitism_rate,
+            tournament_size=self.tournament_size,
+            power_value=self.power_value,
+            fitness_threshold=self.fitness_threshold,
+        )
 
         # Reset the rerun flag after run
         st.session_state.rerun_genetic_miner = False
@@ -152,7 +162,10 @@ class GeneticMinerController(BaseAlgorithmController):
         self.process_algorithm_parameters()
         view.display_back_button()
         view.display_export_button(disabled=True)
-        if st.session_state.get("rerun_genetic_miner", False) or self.have_parameters_changed():
+        if (
+            st.session_state.get("rerun_genetic_miner", False)
+            or self.have_parameters_changed()
+        ):
             try:
                 view.display_loading_spinner("Mining...", self.perform_mining)
             except InvalidNodeNameException as ex:
@@ -161,8 +174,8 @@ class GeneticMinerController(BaseAlgorithmController):
                     "Invalid node name. The string '___' is not allowed in node names."
                 )
                 st.session_state.error = (
-                        ex.message
-                        + "\n Please check the input data. The string '___' is not allowed in node names."
+                    ex.message
+                    + "\n Please check the input data. The string '___' is not allowed in node names."
                 )
                 to_home()
                 st.rerun()
@@ -176,7 +189,9 @@ class GeneticMinerController(BaseAlgorithmController):
                 )
             except Exception as ex:
                 self.logger.exception(ex)
-                st.error("Genetic Mining could not be started. Please use a population size of at least 3 or review your parameters.")
+                st.error(
+                    "Genetic Mining could not be started. Please use a population size of at least 3 or review your parameters."
+                )
         view.display_sidebar(self.get_sidebar_values())
         if self.mining_model.get_graph() is None:
             st.info(

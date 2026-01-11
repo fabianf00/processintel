@@ -12,12 +12,12 @@ class PetriNetGraph(BaseGraph):
         self.gateway_info: dict[str, dict] = {}
 
     def add_event(
-            self,
-            title: str,
-            spm: float,
-            normalized_frequency: float,
-            absolute_frequency: int,
-            **event_data,
+        self,
+        title: str,
+        spm: float,
+        normalized_frequency: float,
+        absolute_frequency: int,
+        **event_data,
     ) -> None:
         """Add an event to the graph.
 
@@ -47,7 +47,9 @@ class PetriNetGraph(BaseGraph):
             fillcolor="#FDFFF5",
         )
 
-    def create_edge(self, source: str, destination: str, weight: int = None, **edge_data) -> None:
+    def create_edge(
+        self, source: str, destination: str, weight: int = None, **edge_data
+    ) -> None:
         """Create an edge between two nodes.
 
         Parameters
@@ -62,10 +64,19 @@ class PetriNetGraph(BaseGraph):
             additional data for the edge
         """
         self.adjacency.setdefault(source, []).append(destination)
-        edge_data = {key: str(value) if isinstance(value, (int, float)) else value for key, value in edge_data.items()}
+        edge_data = {
+            key: str(value) if isinstance(value, (int, float)) else value
+            for key, value in edge_data.items()
+        }
         super().add_edge(source, destination, weight, data=edge_data)
 
-    def add_place(self, place_id: str, label: str = " ", data: dict | None = None, **node_attributes) -> None:
+    def add_place(
+        self,
+        place_id: str,
+        label: str = " ",
+        data: dict | None = None,
+        **node_attributes,
+    ) -> None:
         """Add a place node to the graph.
 
         Parameters
@@ -83,8 +94,13 @@ class PetriNetGraph(BaseGraph):
             **node_attributes,
         )
 
-    def add_silent_transition(self, transition_id: str, label: str = "silent", data: dict | None = None,
-                              **node_attributes) -> None:
+    def add_silent_transition(
+        self,
+        transition_id: str,
+        label: str = "silent",
+        data: dict | None = None,
+        **node_attributes,
+    ) -> None:
         """Add a silent (tau) transition to the graph."""
         node_attributes.setdefault("shape", "box")
         node_attributes.setdefault("style", "filled")
@@ -120,11 +136,17 @@ class PetriNetGraph(BaseGraph):
                 title = title.replace("Gateway", "End Gate")
             return title, description
 
-
         node = self.get_node(id)
         node_label = node.get_label().strip().lower() if node else ""
         node_id = str(id).lower()
-        if node_id.startswith("tau") or node_label == "silent" or node_label.startswith("silent "):
-            return "Silent Transition", "**Silent Transition**\nRepresents an invisible routing step in the Petri net."
+        if (
+            node_id.startswith("tau")
+            or node_label == "silent"
+            or node_label.startswith("silent ")
+        ):
+            return (
+                "Silent Transition",
+                "**Silent Transition**\nRepresents an invisible routing step in the Petri net.",
+            )
 
         return super().node_to_string(id)
