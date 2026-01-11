@@ -1,3 +1,5 @@
+from os import getenv
+
 from app.ui.alpha_miner_ui.alpha_miner_controller import AlphaMinerController
 from app.ui.fuzzy_miner_ui.fuzzy_miner_controller import FuzzyMinerController
 from app.ui.genetic_miner_ui.genetic_miner_controller import GeneticMinerController
@@ -7,6 +9,8 @@ from app.ui.heuristic_miner_ui.heuristic_miner_controller import (
 from app.ui.inductive_miner_ui.inductive_miner_controller import (
     InductiveMinerController,
 )
+
+DOCS_DIR = getenv("PM_INSIGHT_DOCS_DIR") or "docs"
 
 # colon_substitute is used to replace the colon in event names to make them compatible with graphviz.
 colon_substitute = "___"
@@ -58,11 +62,11 @@ algorithm_mappings = {
 }
 # Maps the algorithm routes to the paths of the documentation files.
 docs_path_mappings = {
-    "heuristic": "docs/algorithms/heuristic_miner.md",
-    "fuzzy": "docs/algorithms/fuzzy_miner.md",
-    "inductive": "docs/algorithms/inductive_miner.md",
-    "alpha": "docs/algorithms/alpha_miner.md",
-    "genetic": "docs/algorithms/genetic_miner.md",
+    "heuristic": f"{DOCS_DIR}/algorithms/heuristic_miner.md",
+    "fuzzy": f"{DOCS_DIR}/algorithms/fuzzy_miner.md",
+    "inductive": f"{DOCS_DIR}/algorithms/inductive_miner.md",
+    "alpha": f"{DOCS_DIR}/algorithms/alpha_miner.md",
+    "genetic": f"{DOCS_DIR}/algorithms/genetic_miner.md",
 }
 
 # Maps the algorithm routes to the controllers.
