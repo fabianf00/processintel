@@ -1,6 +1,7 @@
 import unittest
-from graphs.dfg import DFG
-from graphs.cuts import exclusive_cut
+
+from app.graphs.cuts import exclusive_cut
+from app.graphs.dfg import DFG
 
 
 class TestExclusiveCut(unittest.TestCase):

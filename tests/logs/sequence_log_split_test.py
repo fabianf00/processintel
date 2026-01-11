@@ -1,5 +1,6 @@
 import unittest
-from logs.splits import sequence_split
+
+from app.logs.splits import sequence_split
 
 
 class TestSequenceLogSplit(unittest.TestCase):

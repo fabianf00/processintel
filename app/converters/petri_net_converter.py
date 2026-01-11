@@ -1,5 +1,5 @@
-import itertools
 from dataclasses import dataclass
+import itertools
 from typing import Any, Callable
 
 from app.graphs.petri_net import PetriNetToolkit, add_petri_net_to_graph

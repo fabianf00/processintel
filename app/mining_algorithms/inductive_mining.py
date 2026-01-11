@@ -1,3 +1,5 @@
+from app.converters.bpmn_converter import BPMNConverter, InductiveBPMNData
+from app.converters.petri_net_converter import InductivePetriNetData, PetriNetConverter
 from app.graphs.cuts import exclusive_cut, parallel_cut, sequence_cut, loop_cut
 from app.graphs.dfg import DFG
 from app.graphs.petri_net import PetriNetToolkit
@@ -10,8 +12,6 @@ from app.logs.splits import (
     loop_split,
 )
 from app.mining_algorithms.base_mining import BaseMining
-from app.converters.bpmn_converter import BPMNConverter, InductiveBPMNData
-from app.converters.petri_net_converter import InductivePetriNetData, PetriNetConverter
 
 
 class InductiveMining(BaseMining):

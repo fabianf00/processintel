@@ -1,6 +1,7 @@
-import unittest
 from parameterized import parameterized
-from analysis.predictions_model import PredictionModel
+import unittest
+
+from app.analysis.predictions_model import PredictionModel
 
 column_types_predictions_values = {
     "time": set(["time", "date"]),

@@ -1,13 +1,13 @@
 import streamlit as st
 
-from app.ui.base_ui.base_controller import BaseController
 from app.analysis.detection_model import DetectionModel
-from app.io_operations.import_operations import ImportOperations
 from app.exceptions.io_exceptions import (
     UnsupportedFileTypeException,
     NotImplementedFileTypeException,
 )
+from app.io_operations.import_operations import ImportOperations
 from app.logger import get_logger
+from app.ui.base_ui.base_controller import BaseController
 
 
 class HomeController(BaseController):

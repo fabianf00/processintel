@@ -1,14 +1,13 @@
-import unittest
 from collections import deque
-
 import pandas as pd
+import unittest
 
-from graphs.visualization import PetriNetGraph
-from graphs.visualization.base_graph import BaseGraph
-from logger import get_logger
-from mining_algorithms.genetic_mining import GeneticMining
-from transformations.dataframe_transformations import DataframeTransformations
-from transformations.utils import cases_list_to_dict
+from app.graphs.visualization import PetriNetGraph
+from app.graphs.visualization.base_graph import BaseGraph
+from app.logger import get_logger
+from app.mining_algorithms.genetic_mining import GeneticMining
+from app.transformations.dataframe_transformations import DataframeTransformations
+from app.transformations.utils import cases_list_to_dict
 
 
 class TestGeneticMining(unittest.TestCase):

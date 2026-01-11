@@ -1,7 +1,9 @@
-import unittest
 from parameterized import parameterized
-from analysis.detection_model import DetectionModel
-from exceptions.io_exceptions import UnsupportedFileTypeException
+import unittest
+
+
+from app.analysis.detection_model import DetectionModel
+from app.exceptions.io_exceptions import UnsupportedFileTypeException
 
 file_types_mapping = {
     "csv": [".csv"],

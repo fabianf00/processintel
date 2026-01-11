@@ -1,8 +1,8 @@
 import streamlit as st
 
-from app.ui.base_ui.base_view import BaseView
-from app.config import algorithm_mappings
 from app.components.buttons import navigation_button
+from app.config import algorithm_mappings
+from app.ui.base_ui.base_view import BaseView
 
 
 class HomeView(BaseView):

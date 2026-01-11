@@ -1,10 +1,10 @@
 import streamlit as st
 
-from app.ui.base_ui.base_controller import BaseController
 from app.components.buttons import navigate_to, to_home
-from app.io_operations.import_operations import ImportOperations
 from app.config import docs_path_mappings
+from app.io_operations.import_operations import ImportOperations
 from app.logger import get_logger
+from app.ui.base_ui.base_controller import BaseController
 
 
 class AlgorithmExplanationController(BaseController):
@@ -22,7 +22,7 @@ class AlgorithmExplanationController(BaseController):
         """
 
         if views is None:
-            from ui.algorithm_explanation_ui.algorithm_explanation_view import (
+            from app.ui.algorithm_explanation_ui.algorithm_explanation_view import (
                 AlgorithmExplanationView,
             )
 

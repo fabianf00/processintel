@@ -1,6 +1,7 @@
 import unittest
-from graphs.dfg import DFG
-from graphs.cuts import parallel_cut
+
+from app.graphs.cuts import parallel_cut
+from app.graphs.dfg import DFG
 
 
 class TestParallelCut(unittest.TestCase):

@@ -1,9 +1,8 @@
 import os
-
 import streamlit as st
 import streamlit.components.v1 as components
 
-from graphs.visualization.base_graph import BaseGraph
+from app.graphs.visualization.base_graph import BaseGraph
 
 # Template for the component from https://docs.streamlit.io/library/components/publish and https://github.com/streamlit/component-template/tree/master/template/my_component
 
@@ -22,7 +21,7 @@ else:
 
 
 def interactiveGraph(
-        graph: BaseGraph, onClick, key="interactiveGraph", height=600
+    graph: BaseGraph, onClick, key="interactiveGraph", height=600
 ) -> None:
     state_name = f"previous_clickId-{key}"
 
@@ -47,6 +46,7 @@ def interactiveGraph(
             onClick(f"**Node: {node_name}**", description)
 
         elif component_value["type"] == "edge":
-            title, description = graph.edge_to_string(component_value.get("source", ""),
-                                                      component_value.get("target", ""))
+            title, description = graph.edge_to_string(
+                component_value.get("source", ""), component_value.get("target", "")
+            )
             onClick(f"**Edge: {title}**", description)

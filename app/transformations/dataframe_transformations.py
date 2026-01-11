@@ -1,6 +1,7 @@
 import pandas as pd
-from app.transformations.utils import cases_list_to_dict
+
 from app.exceptions.io_exceptions import InvalidColumnNameException
+from app.transformations.utils import cases_list_to_dict
 
 
 class DataframeTransformations:

@@ -1,5 +1,5 @@
-import streamlit as st
 from abc import ABC, abstractmethod
+import streamlit as st
 
 from app.exceptions.type_exceptions import TypeIsNoneException, InvalidTypeException
 from app.logger import get_logger

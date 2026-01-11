@@ -1,5 +1,5 @@
-import itertools
 from collections.abc import Iterable, Sequence
+import itertools
 
 from app.logger import get_logger
 

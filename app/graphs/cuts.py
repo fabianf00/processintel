@@ -1,5 +1,6 @@
-from app.graphs.dfg import DFG
 from collections import deque
+
+from app.graphs.dfg import DFG
 
 
 def exclusive_cut(graph: DFG) -> list[set[str | int]]:

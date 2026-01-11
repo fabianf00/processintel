@@ -1,8 +1,8 @@
+import itertools
+import numpy as np
 import random
 import threading
 import uuid
-import itertools
-import numpy as np
 
 from app.converters.petri_net_converter import GeneticPetriNetData, PetriNetConverter
 from app.graphs.petri_net import PetriNetToolkit

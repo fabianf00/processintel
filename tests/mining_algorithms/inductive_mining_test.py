@@ -1,5 +1,6 @@
 import unittest
-from mining_algorithms.inductive_mining import InductiveMining
+
+from app.mining_algorithms.inductive_mining import InductiveMining
 
 
 def isProcessTreeEqual(tree1, tree2):

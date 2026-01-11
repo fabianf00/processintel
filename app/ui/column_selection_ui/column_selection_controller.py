@@ -1,12 +1,12 @@
-import streamlit as st
 import pandas as pd
+import streamlit as st
 
-from app.ui.base_ui.base_controller import BaseController
+from app.analysis.predictions_model import PredictionModel
 from app.components.buttons import to_home
 from app.config import algorithm_mappings
-from app.analysis.predictions_model import PredictionModel
-from app.transformations.dataframe_styler import DataFrameStyler
 from app.logger import get_logger
+from app.transformations.dataframe_styler import DataFrameStyler
+from app.ui.base_ui.base_controller import BaseController
 
 
 class ColumnSelectionController(BaseController):
@@ -28,7 +28,7 @@ class ColumnSelectionController(BaseController):
         """
 
         if views is None:
-            from ui.column_selection_ui.standard_column_selection_view import (
+            from app.ui.column_selection_ui.standard_column_selection_view import (
                 StandardColumnSelectionView,
             )
 

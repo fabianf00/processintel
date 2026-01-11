@@ -1,8 +1,9 @@
-import unittest
 import pandas as pd
-from transformations.dataframe_transformations import DataframeTransformations
-from transformations.utils import cases_list_to_dict
-from exceptions.io_exceptions import InvalidColumnNameException
+import unittest
+
+from app.exceptions.io_exceptions import InvalidColumnNameException
+from app.transformations.dataframe_transformations import DataframeTransformations
+from app.transformations.utils import cases_list_to_dict
 
 
 class TestDataframeTransformations(unittest.TestCase):

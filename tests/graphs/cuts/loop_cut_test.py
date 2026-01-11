@@ -1,6 +1,7 @@
 import unittest
-from graphs.dfg import DFG
-from graphs.cuts import loop_cut
+
+from app.graphs.cuts import loop_cut
+from app.graphs.dfg import DFG
 
 
 class TestLoopCut(unittest.TestCase):

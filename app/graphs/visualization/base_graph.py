@@ -160,7 +160,7 @@ class BaseGraph:
 
         self.graph.attr("graph", **graph_attributes)
 
-        from config import colon_substitute
+        from app.config import colon_substitute
 
         self.colon_substitute: str = colon_substitute
 

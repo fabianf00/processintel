@@ -2,15 +2,14 @@
 This unittest tests the integrity of the heuristic_graph_controller which holds the HeuristicMining Model.
 """
 
-import unittest
 from collections import deque
-
+import unittest
 import pandas as pd
 
-from graphs.visualization.base_graph import BaseGraph
-from mining_algorithms.heuristic_mining import HeuristicMining
-from transformations.dataframe_transformations import DataframeTransformations
-from transformations.utils import cases_list_to_dict
+from app.graphs.visualization.base_graph import BaseGraph
+from app.mining_algorithms.heuristic_mining import HeuristicMining
+from app.transformations.dataframe_transformations import DataframeTransformations
+from app.transformations.utils import cases_list_to_dict
 
 
 def read(filename, timeLabel="timestamp", caseLabel="case", eventLabel="event"):

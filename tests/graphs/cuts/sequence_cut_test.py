@@ -1,8 +1,9 @@
-import unittest
-from graphs.dfg import DFG
-from graphs.cuts import sequence_cut
-from transformations.dataframe_transformations import DataframeTransformations
 import pandas as pd
+import unittest
+
+from app.graphs.cuts import sequence_cut
+from app.graphs.dfg import DFG
+from app.transformations.dataframe_transformations import DataframeTransformations
 
 
 class TestSequenceCut(unittest.TestCase):

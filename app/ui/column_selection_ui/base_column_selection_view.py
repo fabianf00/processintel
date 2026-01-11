@@ -1,8 +1,8 @@
-import streamlit as st
 from abc import ABC, abstractmethod
+import streamlit as st
 
-from app.ui.base_ui.base_view import BaseView
 from app.components.buttons import home_button, navigation_button
+from app.ui.base_ui.base_view import BaseView
 
 
 class BaseColumnSelectionView(BaseView):

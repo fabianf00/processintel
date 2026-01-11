@@ -1,8 +1,8 @@
 import streamlit as st
 
-from app.ui.base_ui.base_view import BaseView
 from app.components.buttons import navigation_button
 from app.components.PNGViewer import PNGViewer
+from app.ui.base_ui.base_view import BaseView
 
 
 class ExportView(BaseView):

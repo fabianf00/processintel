@@ -1,17 +1,17 @@
+import os
 import streamlit as st
 import tempfile
-import os
 
-from app.ui.home_ui.home_controller import HomeController
+
+from app.config import algorithm_routes
+from app.ui.algorithm_explanation_ui.algorithm_explanation_controller import (
+    AlgorithmExplanationController,
+)
 from app.ui.column_selection_ui.column_selection_controller import (
     ColumnSelectionController,
 )
 from app.ui.export_ui.export_controller import ExportController
-from app.ui.algorithm_explanation_ui.algorithm_explanation_controller import (
-    AlgorithmExplanationController,
-)
-from app.config import algorithm_routes
-
+from app.ui.home_ui.home_controller import HomeController
 
 st.set_page_config(
     page_title="Process Mining Tool",

@@ -1,8 +1,8 @@
 from abc import ABC
 
-from app.mining_algorithms.ddcal_clustering import DensityDistributionClusterAlgorithm
 from app.graphs.visualization.base_graph import BaseGraph
 from app.logger import get_logger
+from app.mining_algorithms.ddcal_clustering import DensityDistributionClusterAlgorithm
 
 
 class MiningInterface(ABC):

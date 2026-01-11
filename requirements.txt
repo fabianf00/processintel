@@ -1,5 +1,5 @@
 numpy
 pandas
 graphviz
-ddcal
-streamlit==1.36.0
+ddcal>=1.2.0
+streamlit

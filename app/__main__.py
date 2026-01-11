@@ -1,5 +1,5 @@
-from streamlit.web.bootstrap import run as streamlit_run
 import os
+from streamlit.web.bootstrap import run as streamlit_run
 
 
 def main():

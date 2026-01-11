@@ -1,5 +1,6 @@
 import unittest
-from logs.splits import parallel_split
+
+from app.logs.splits import parallel_split
 
 
 class TestParallelLogSplit(unittest.TestCase):

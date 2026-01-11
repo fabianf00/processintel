@@ -1,5 +1,6 @@
 import unittest
-from graphs.dfg import DFG
+
+from app.graphs.dfg import DFG
 
 
 class TestDFG(unittest.TestCase):

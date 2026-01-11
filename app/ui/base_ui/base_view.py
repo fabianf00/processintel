@@ -1,5 +1,5 @@
-import streamlit as st
 from abc import ABC
+import streamlit as st
 
 from app.exceptions.type_exceptions import InvalidTypeException
 from app.logger import get_logger

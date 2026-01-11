@@ -1,12 +1,13 @@
 import unittest
-from graphs.visualization.base_graph import BaseGraph, Node, Edge
-from exceptions.graph_exceptions import (
+
+from app.exceptions.graph_exceptions import (
     DuplicateNodeException,
     DuplicateEdgeException,
     NodeDoesNotExistException,
     EdgeDoesNotExistException,
     InvalidNodeNameException,
 )
+from app.graphs.visualization.base_graph import BaseGraph, Node, Edge
 
 
 class TestNode(unittest.TestCase):

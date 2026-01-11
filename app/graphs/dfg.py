@@ -1,4 +1,5 @@
 from collections import deque
+
 from app.transformations.utils import cases_list_to_dict
 
 

@@ -1,8 +1,8 @@
 import base64
-import pickle
-from typing import Union
 import pandas as pd
+import pickle
 from streamlit.runtime.uploaded_file_manager import UploadedFile
+from typing import Union
 
 
 class ImportOperations:

@@ -1,5 +1,6 @@
-from logs.splits import exclusive_split
 import unittest
+
+from app.logs.splits import exclusive_split
 
 
 class TestExclusiveLogSplit(unittest.TestCase):
