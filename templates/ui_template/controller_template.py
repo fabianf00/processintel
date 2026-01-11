@@ -1,5 +1,6 @@
 import streamlit as st
-from ui.base_ui.base_controller import BaseController
+
+from app.ui.base_ui.base_controller import BaseController
 
 
 class ControllerTemplate(BaseController):

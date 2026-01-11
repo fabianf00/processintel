@@ -1,5 +1,6 @@
 import streamlit as st
-from ui.column_selection_ui.standard_column_selection_view import (
+
+from app.ui.column_selection_ui.standard_column_selection_view import (
     StandardColumnSelectionView,
 )
 

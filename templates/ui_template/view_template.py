@@ -1,5 +1,6 @@
 import streamlit as st
-from ui.base_ui.base_view import BaseView
+
+from app.ui.base_ui.base_view import BaseView
 
 
 class ViewTemplate(BaseView):

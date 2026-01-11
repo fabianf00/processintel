@@ -1,5 +1,6 @@
-from ui.base_algorithm_ui.base_algorithm_view import BaseAlgorithmView
 import streamlit as st
+
+from app.ui.base_algorithm_ui.base_algorithm_view import BaseAlgorithmView
 
 
 class AlgorithmViewTemplate(BaseAlgorithmView):

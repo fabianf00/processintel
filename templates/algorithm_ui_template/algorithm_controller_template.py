@@ -1,5 +1,6 @@
-from ui.base_algorithm_ui.base_algorithm_controller import BaseAlgorithmController
 import streamlit as st
+
+from app.ui.base_algorithm_ui.base_algorithm_controller import BaseAlgorithmController
 
 
 class AlgorithmControllerTemplate(BaseAlgorithmController):
