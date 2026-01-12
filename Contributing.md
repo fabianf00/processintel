@@ -1,67 +1,254 @@
-# Extending the project
+# Contributing Guidelines
 
-This file explains how to extend the project. The following cases will be mentioned:
+Thank you for your interest in contributing to this project!
 
-- Adding a page
-- Adding a View to an existing page
-- Adding a Mining Algorithm
-- Add new column selections
-- Extending Models
+This project is primarily developed by **students as part of their bachelor theses**.  
+The goal is to maintain a **high-quality, well-tested, well-documented, and secure academic codebase**, suitable for **research, reproducibility, and long-term maintenance** in the field of **process mining**.
 
-## Adding a page
+Please read and follow these guidelines carefully.
 
-The project uses the MVC pattern to build pages. At least 2 classes need to be written, a view class and a controller class. These classes should be stored in its own folder inside the ui package. The logic for a page should be store in models. These need to be created, or existing models can be reused. Views are only responsible for displaying the page. The controller decides what part of the view or what view is displayed, processes input events, e.g. button clicks or value changes, calls the models and passes data to the view class to display it. It is recommended to use the template stored in `templates/ui_template` to create a new page.
+---
 
-The `run` method inside the controller is run at every reload, the `process_session_state` method should be used to either read values from the session state or to set values in the session state. `select_view` is an optional method and only needs to be implemented when more than one view is used for a page, the `process_session_state` method is called before the `run` and `select_view` method. Variables set in this method can be directly used in the `select_view` and `run` method.
+## General Principles
 
-It is recommended to have a function for each section that should be displayed, inside the view class. The `create_layout` method can be uses to reserve space for a section and render these sections out of order.
+- Keep changes **small, focused, and reviewable**
+- Maintain **high code quality**
+- Write **tests for all relevant code**
+- Document your work clearly and precisely
+- Follow established software engineering and academic best practices
+- These rules apply to **all contributors**, including thesis students
 
-To add the page to the application, the controller needs to be called in the `streamlit_app.py` file, with a route.
+---
 
-## Adding a View to an existing page
+## Security Requirements
 
-If a new view for a page is added, the view should be stored in the same folder as the page views and the controller. The view should either be a subclass of the BaseView class or directly inherit from the page view class. The switch between views the `select_view` method has to be implemented. If the two views do not have the same methods, the run methods also need to be changed to support the new view. An example of the `select_view` method is displayed here:
+### SSH Usage
 
-```python
-def select_view(self):
-        if self.selected_algorithm == "heuristic":
-            return self.views[1],1
-        else:
-            return self.views[0], 0
+All interactions with the repository **must use SSH**.
+
+- HTTPS access is not allowed
+- Configure an SSH key in your Forgejo account before cloning
+- All pushes and fetches must use SSH URLs
+
+Example:
+
+`git clone git@code.swisdata.eu:your-username/pm-insight.git`
+
+---
+
+### GPG Commit Signing
+
+All commits **must be cryptographically signed** using a GPG key.
+
+- Unsigned commits will be rejected
+- Your GPG key must be uploaded to your Forgejo profile
+- This ensures authorship, accountability, and academic integrity
+
+Enable commit signing:
+
+```bash
+git config --global commit.gpgsign true 
+git config --global user.signingkey YOUR_KEY_ID
 ```
 
-One use case will be adding a ColumnSelectionView. This case will be mentioned here, due to its importance.
+---
 
-## Adding new column selections
+## Repository Workflow
 
-Adding new column selections may be necessary in the future, for some algorithms, e.g. a resource column, a person column. To add these columns, there are two templates in the `templates/column_selection_template`. The `BaseColumnSelectionViewTemplate` does not contain any columns at all, and all columns need to be added by the new class. The `ExtendedColumnSelectionViewTemplate` contains the time_column, case_column and event_column/activity_column. The `needed_columns` and `column_styles` need to be added with additional data. The method `render_column_selections` needs to add a selection box with a key equal to the `needed_column` name (e.g. person_column), so that the controller can assign the value to the correct field. Additionally, the `select_view` method of the `ColumnSelectionController` needs to be updated, to switch to this view, if a specific algorithm has been chosen. To ensure the correct transformation for the mining algorithm, the method `transform_df_to_log` need to be overridden, in the AlgorithmController of the new mining algorithms. Otherwise, the additional columns will be ignored, and the default transformation will be performed.
+### Forking the Repository
 
-## Adding a Mining Algorithm
+All work **must** be done in a fork of the main repository.
 
-The project uses the MVC pattern to build pages. To add a mining algorithm at least 3 classes are needed, an AlgorithmView, an AlgorithmController and a MiningModel. The view(s) and the controller should be in its own folder in the `ui` directory. It is recommended to use the template provided in `templates/algorithm_ui_template`. The MiningModel should be stored in the `mining_algorithms` folder, and the model should inherit from either the `MiningInterface` or the `BaseMining` class. Developers need to choose which class suits their algorithm best. Additionally, it is recommended to create a custom Graph class, to define styles of nodes and edges directly in it and to make the code more readable. The Graph class should be stored in the graphs/visualization directory, and the `BaseGraph` is the parent class. It is also possible to use the `BaseGraph` directly.
+1. Create a fork of the repository on Forgejo
+2. Clone your fork locally:
 
-To create a view, the class has to inherit from the `BaseAlgorithmView` class. Inside this base class, most of the code is already defined. For the child class, only the sliders need to be defined. This is done in the `render_sidebar` method. The keys of the sliders have to be equal to keys of the session state, which are read and set in the controller. It is recommended to use the same keys in the `sidebar_values` dictionary.
+```bash
+git clone git@code.swisdata.eu:your-username/pm-insight.git
+```
 
-The controller has to inherit from the `BaseAlgorithmController` class. Inside the constructor, the mining model class has to be defined (class not instance!). Furthermore, the following methods need to be overridden: `process_algorithm_parameters`, `perform_mining`, `have_parameters_changed`, `get_sidebar_values`. `process_algorithm_parameters` reads the parameters for the mining algorithm from the session state, or sets them with default values, if they are not set. `perform_mining` calls the model to perform the mining algorithm with the algorithm parameters. `have_parameters_changed` checks if a parameter of the algorithm has changed. If this is not the case, the algorithm does not rerun, as the result stays the same. `get_sidebar_values` is used to set minimum and maximum values for the slider.
+3. Add the upstream repository:
 
-All dataframes are transformed to algorithm data, by default a log dictionary. If an algorithm needs another data format or additional data from the dataframe, developers can override the `transform_df_to_log(self, df, **selected_columns)` method. This function takes in the pandas dataframe and the selected columns, where a key is the name of the selected column ('time_column') and the value is the selected column of the dateframe (e.g. 'time'). It is important, that the output values need to be compatible with the constructor of the mining model. The transformation logic should be written in the `DataframeTransformations` class.
 
-The Mining model has to either inherit from the `MiningInterface` or the `BaseMining` class. The models need to have getters for all the parameters, and the method to perform the mining has to store a graph of type `BaseGraph` in the `self.graph` variable.
+```bash
+git remote add upstream git@code.swisdata.eu:SWISDATA/pm-insight.git
+```
 
-To add the algorithm to the page, it needs to be added in the `config.py`file. The `algorithm_mappings` map the name of the algorithm to the route, the `algorithm_routes` map the route to the controller class. Both dictionaries need to add the new data, to make the algorithm usable. Optionally, a documentation page can be added to the mining algorithm. This should be written in a markdown file and stored in the `docs/algorithms` directory. To add the documentation, the docs path needs to be added to the `docs_path_mappings` dictionary, the key is the route of the algorithms and the value the path to the file.
+Direct commits to the main repository are **not allowed**.
 
-## Extending Models
+---
 
-This section will be about how to extend model functionality across the application. This will not go over all the models, but only a few important ones.
+## Branch Rules
 
-### Adding new Import Formats
+- Every change must be done in **its own branch**
+- Never commit directly to `main`
+- Branch names must be **descriptive**
+### Branch Naming Examples
 
-Adding new import formats need a few changes to work. First, the file type needs to be added to the config. This is done by adding it to the `import_file_types_mapping` in the config file. Secondly, the `HomeController` needs to be updated, so that it will process the file format. The format has to be added in the `process_file` method. The `ImportOperations` needs a method to read the new file type.
+- `add-xes-support`
+- `add-inductive-miner`
+- `add-filtering-to-algorithms`
+- `update-happy-path`
 
-### Adding a new Export Format
+---
 
-To add a new export format, the `graph_export_mime_types` variable inside the config file needs to be updated with the new file type and its mime type. The `ExportController` needs to be updated to allow the export of the file type, and the `ExportOperations` class needs a function to export the graph to the disk in the correct format.
+## Pull Requests
 
-### Updating the PredictionModel
+### One Purpose per Pull Request
 
-The `PredictionModel` uses a dictionary to assign columns to a specific type. This prediction data could be updated by adding new values to the dictionary. Another solution would be to use an AI Model for predictions. If the second approach is uses either update the current `PredictionModel` or create a new class, but the function signature should stay the same, if possible, to integrate the new code easier.
+Each Pull Request (PR) **must do exactly one thing**.
+
+Allowed:
+
+- One feature
+- One bug fix
+- One refactor
+
+Not allowed:
+
+- Mixing unrelated changes
+- Combining features and fixes
+- Large cleanup PRs
+
+Split your work into **multiple PRs** if needed.
+
+---
+
+### Pull Request Requirements
+
+Each PR must:
+
+- Be based on a fork and a dedicated branch    
+- Be formatted using **Black**
+- Include **tests** for new or changed functionality
+- Pass all automated checks
+- Update documentation where applicable
+- Clearly explain what was changed and **why**
+
+PRs not meeting these requirements **will not be merged**.
+
+---
+
+## Code Formatting
+
+This project **requires** the use of the **Black** code formatter.
+
+- All Python code must be formatted with Black
+- Formatting is not optional
+
+Install and run:
+
+```bash
+pip install 
+black black .
+```
+
+---
+
+## Testing Requirements
+
+All code **must be tested** using Python’s **built-in `unittest` framework**.
+
+- The project uses **`unittest` exclusively**
+- Do **not** introduce alternative testing frameworks (e.g. `pytest`, `nose`)
+- Tests must be reproducible, readable, and deterministic
+### Test Structure Guidelines
+
+- Place tests in the designated `tests/` directory
+- Name test files as `<module>_tests.py`
+- Use descriptive test case and method names
+- Each test should validate **one specific behavior**
+    
+PRs without appropriate `unittest`-based tests will be rejected unless **explicitly justified**.
+
+---
+
+## Docstring Guidelines (Mandatory)
+
+### Required Docstring Format
+
+All public functions, classes, and modules **must use NumPy-style docstrings**.
+This format is **mandatory**.
+
+#### Required structure
+
+```python
+"""Short summary of the function.
+
+Parameters 
+---------- 
+param_name : type
+     Description of the parameter. 
+optional_param : type, optional
+     Description, by default VALUE
+       
+Returns 
+------- 
+return_type
+     Description of the return value.
+     
+Raises 
+------ 
+ExceptionType
+     Description of when this exception is raised. 
+"""
+```
+
+#### Docstring Rules
+
+- Use **NumPy docstring format**
+- Be precise and explicit
+- Describe behavior, not implementation details
+- All parameters and return values must be documented
+
+Code without proper docstrings **will not be accepted**.
+
+---
+
+## Commit Message Guidelines
+
+Commit messages must follow this format:
+
+`<module>, <submodule>: short description`
+
+Rules:
+
+- Keep the description short and clear
+- One logical change per commit
+
+Examples:
+
+```
+parser, config: handle empty configuration files 
+docs, architecture: add system overview diagram`
+```
+---
+
+## Review Process
+
+- All Pull Requests require review
+- Feedback is part of the learning process
+- Maintainers have final merge authority
+- Changes may be requested for correctness or clarity
+
+---
+
+## Questions
+
+If something is unclear, open an issue or contact your supervisor.  
+As this is an academic project, **asking questions is encouraged**.
+
+---
+
+## Extending the Project
+
+Guidelines for extending the project architecture (UI pages, views, algorithms, models, and data formats) are documented separately.
+
+Before implementing new features, contributors **must read and follow**:
+
+- [EXTENDING.md](docs/EXTENDING.md) - Architecture and extension guidelines
+
+All extensions are expected to follow the documented MVC structure and existing templates.
+
+---
+
+Thank you for contributing to a **high-quality and secure** open source process mining project.
