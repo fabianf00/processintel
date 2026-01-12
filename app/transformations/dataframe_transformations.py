@@ -73,7 +73,7 @@ class DataframeTransformations:
         timeLabel: str = "timestamp",
         caseLabel: str = "case",
         eventLabel: str = "event",
-        **additional_columns
+        **additional_columns,
     ) -> dict[tuple[str, ...], int]:
         """transform a DataFrame into a dictionary of cases. Each case is a tuple of events.
         The dictionary maps each case to the number of occurrences.

@@ -23,7 +23,9 @@ APP_TMP_ROOT = os.path.join(tempfile.gettempdir(), "processintel")
 os.makedirs(APP_TMP_ROOT, exist_ok=True)
 
 if "session_tmp_dir" not in st.session_state:
-    st.session_state.session_tmp_dir = tempfile.mkdtemp(dir=APP_TMP_ROOT, prefix="session_")
+    st.session_state.session_tmp_dir = tempfile.mkdtemp(
+        dir=APP_TMP_ROOT, prefix="session_"
+    )
 
 if "page" not in st.session_state:
     st.session_state.page = "Home"

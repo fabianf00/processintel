@@ -49,7 +49,9 @@ class HomeView(BaseView):
         with self.content_column:
             algorithm_col, _, button_column = st.columns([2, 2, 1])
             with algorithm_col:
-                selection = st.selectbox("Mining Algorthm", list(algorithm_mappings.keys()))
+                selection = st.selectbox(
+                    "Mining Algorthm", list(algorithm_mappings.keys())
+                )
 
             with button_column:
                 st.write("")
