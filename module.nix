@@ -7,18 +7,18 @@
 }:
 
 let
-  serviceName = "pm-insight";
+  serviceName = "processintel";
   runtimePath = "/run/${serviceName}";
-  package = self.packages.${pkgs.system}.pm-insight;
-  user = "sv_pm-insight";
+  package = self.packages.${pkgs.system}.processintel;
+  user = "sv_processintel";
 
-  cfg = config.services.pm-insight;
+  cfg = config.services.processintel;
 in
 {
   options = {
-    services.pm-insight = {
+    services.processintel = {
       enable = lib.mkEnableOption ''
-        Whether to enable pm-insight services
+        Whether to enable ProcessIntel services
       '';
 
       production = lib.mkEnableOption ''
@@ -35,14 +35,14 @@ in
       httpAddress = lib.mkOption {
         type = lib.types.str;
         description = ''
-          HTTP address for the pm-insight service
+          HTTP address for the ProcessIntel service
         '';
       };
 
       httpPort = lib.mkOption {
         type = lib.types.int;
         description = ''
-          HTTP port for the pm-insight service
+          HTTP port for the ProcessIntel service
         '';
       };
 
@@ -50,7 +50,7 @@ in
         type = lib.types.int;
         default = 200;
         description = ''
-          Max Upload size for the pm-insight service in GB
+          Max Upload size for the ProcessIntel service in GB
         '';
       };
 
@@ -60,14 +60,14 @@ in
   config = lib.mkIf cfg.enable {
 
     systemd.services.${serviceName} = {
-      description = "PM Insight service";
+      description = "ProcessIntel service";
       before = [ "nginx.service" ];
       wantedBy = [ "multi-user.target" ];
 
       path = [ package ];
 
       environment = {
-        PM_INSIGHT_DOCS_DIR = "${package}/docs";
+        PROCESSINTEL_DOCS_DIR = "${package}/docs";
 
         STREAMLIT_SERVER_ADDRESS = cfg.httpAddress;
         STREAMLIT_SERVER_PORT = toString cfg.httpPort;
@@ -81,7 +81,7 @@ in
       };
 
       script = ''
-        pm-insight
+        processintel
       '';
 
       serviceConfig = {
@@ -126,7 +126,7 @@ in
     };
 
     users.users.${user} = {
-      description = "pm-insight backend service user";
+      description = "ProcessIntel backend service user";
       group = "nogroup";
       isSystemUser = true;
     };

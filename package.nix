@@ -40,7 +40,7 @@ let
   };
 in
 my-python.pkgs.buildPythonApplication rec {
-  pname = "pm-insight";
+  pname = "processintel";
   version = "v1";
   format = "pyproject";
 

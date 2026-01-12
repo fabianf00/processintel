@@ -32,7 +32,7 @@ All interactions with the repository **must use SSH**.
 
 Example:
 
-`git clone git@code.swisdata.eu:your-username/pm-insight.git`
+`git clone git@code.swisdata.eu:your-username/processintel.git`
 
 ---
 
@@ -63,14 +63,14 @@ All work **must** be done in a fork of the main repository.
 2. Clone your fork locally:
 
 ```bash
-git clone git@code.swisdata.eu:your-username/pm-insight.git
+git clone git@code.swisdata.eu:your-username/processintel.git
 ```
 
 3. Add the upstream repository:
 
 
 ```bash
-git remote add upstream git@code.swisdata.eu:SWISDATA/pm-insight.git
+git remote add upstream git@code.swisdata.eu:SWISDATA/processintel.git
 ```
 
 Direct commits to the main repository are **not allowed**.

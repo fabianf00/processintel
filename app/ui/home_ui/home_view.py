@@ -16,7 +16,7 @@ class HomeView(BaseView):
     def display_intro(self):
         """Displays the introduction text for the Home page."""
         with self.content_column:
-            st.title("Welcome to the Process Mining Tool")
+            st.title("Welcome to ProcessIntel")
             st.write(
                 "This tool is designed to help you visualize the dependencies between activities in your process logs."
             )
@@ -49,9 +49,7 @@ class HomeView(BaseView):
         with self.content_column:
             algorithm_col, _, button_column = st.columns([2, 2, 1])
             with algorithm_col:
-                selection = st.selectbox(
-                    "Mining Algorthm", list(algorithm_mappings.keys())
-                )
+                selection = st.selectbox("Mining Algorthm", list(algorithm_mappings.keys()))
 
             with button_column:
                 st.write("")

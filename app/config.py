@@ -10,7 +10,7 @@ from app.ui.inductive_miner_ui.inductive_miner_controller import (
     InductiveMinerController,
 )
 
-DOCS_DIR = getenv("PM_INSIGHT_DOCS_DIR") or "docs"
+DOCS_DIR = getenv("PROCESSINTEL_DOCS_DIR") or "docs"
 
 # colon_substitute is used to replace the colon in event names to make them compatible with graphviz.
 colon_substitute = "___"

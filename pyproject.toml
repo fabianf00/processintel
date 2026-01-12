@@ -3,9 +3,9 @@ requires = ["setuptools>=61", "wheel"]
 build-backend = "setuptools.build_meta"
 
 [project]
-name = "pm-insight"
+name = "processintel"
 version = "1.0"
-description = "PMInsight - An Open Source Process Mining Tool"
+description = "ProcessIntel - An Open Source Process Mining Tool"
 authors = [
     { name="SWISDATA gGmbH", email="office@swisdata.eu" }
 ]
@@ -21,7 +21,7 @@ readme = "README.md"
 requires-python = ">=3.11"
 
 [project.scripts]
-pm-insight = "app.__main__:main"
+processintel = "app.__main__:main"
 
 [tool.setuptools.packages.find]
 where = ["."]

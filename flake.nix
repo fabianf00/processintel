@@ -1,5 +1,5 @@
 {
-  description = "PM Insight";
+  description = "ProcessIntel";
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
@@ -31,7 +31,7 @@
           ];
     in
     {
-      nixosModules.pm-insight = import ./module.nix inputs;
+      nixosModules.processintel = import ./module.nix inputs;
     }
     // eachSystem (
       system:
@@ -40,7 +40,7 @@
       in
       {
         packages = rec {
-          pm-insight = pkgs.callPackage ./package.nix { inherit (pkgs) python3; };
+          processintel = pkgs.callPackage ./package.nix { inherit (pkgs) python3; };
         };
       }
     );

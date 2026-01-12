@@ -1,8 +1,8 @@
-![alt text](PMInsight.jpg?raw=true)
+![alt text](ProcessIntel.jpg?raw=true)
 
-# PM-Insight
+# ProcessIntel
 
-**PM-Insight** is an open-source application for **process mining, visualization, and interactive exploration** of process models. It enables users to import event logs, mine process models using multiple algorithms, and explore results through an **interactive graph-based interface**.
+**ProcessIntel** is an open-source application for **process mining, visualization, and interactive exploration** of process models. It enables users to import event logs, mine process models using multiple algorithms, and explore results through an **interactive graph-based interface**.
 
 ---
 
@@ -10,7 +10,7 @@
 
 - **Event log & model input**
   - Import **CSV event logs**
-  - Load **PM-Insight native process models**
+  - Load **ProcessIntel native process models**
 - **Process mining algorithms**
   - Alpha Miner  
   - Heuristic Miner  
@@ -94,7 +94,7 @@ python -m unittest tests
 
 ## Nix Support
 
-PM-Insight can also be run as a Nix service, enabling reproducible builds and seamless deployment in Nix-based environments.
+ProcessIntel can also be run as a Nix service, enabling reproducible builds and seamless deployment in Nix-based environments.
 See the Nix-related configuration files in the repository for details.
 
 ---
@@ -115,4 +115,4 @@ This project is licensed under the terms described in the LICENSE file included 
 ## Feedback
 
 If you encounter bugs or have feature requests, please open an issue on GitHub.
-Your feedback helps improve PM-Insight for everyone.
+Your feedback helps improve ProcessIntel for everyone.
