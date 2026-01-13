@@ -78,16 +78,16 @@ The application will open automatically in your default web browser.
 
 Test dependencies are listed in:
 
-`tests/test_requirements.txt`
+`tests/requirements_test.txt`
 
 Install them with:
 
 ```bash
-pip install -r tests/test_requirements.txt
+pip install -r tests/requirements_test.txt
 ```
 Run all tests:
 ```bash
-python -m unittest tests
+python -m unittest discover -s tests
 ```
 
 ---

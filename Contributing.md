@@ -146,15 +146,16 @@ black black .
 
 ## Testing Requirements
 
-All code **must be tested** using Python’s **built-in `unittest` framework**.
+All code **must be tested** using Python's **built-in `unittest` framework**.
 
 - The project uses **`unittest` exclusively**
 - Do **not** introduce alternative testing frameworks (e.g. `pytest`, `nose`)
 - Tests must be reproducible, readable, and deterministic
+
 ### Test Structure Guidelines
 
 - Place tests in the designated `tests/` directory
-- Name test files as `<module>_tests.py`
+- Name test files as `<module>/<name>_test.py`
 - Use descriptive test case and method names
 - Each test should validate **one specific behavior**
     

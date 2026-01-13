@@ -85,7 +85,7 @@ def select_view(self):
 	return self.views[0], 0
 ```
 
-Adapt the controller’s `run` method if views differ in functionality.
+Adapt the controller's `run` method if views differ in functionality.
 
 ---
 
