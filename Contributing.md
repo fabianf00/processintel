@@ -20,111 +20,133 @@ Please read and follow these guidelines carefully.
 
 ---
 
-## Security Requirements
+## Required Setup
 
-### SSH Usage
+Before contributing, you must complete the following one-time setup steps.
+These requirements apply to all contributors, including thesis students.
 
-All interactions with the repository **must use SSH**.
+### SSH Keys
 
-- HTTPS access is not allowed
-- Configure an SSH key in your Forgejo account before cloning
-- All pushes and fetches must use SSH URLs
+SSH is used to securely authenticate all access to the repository. All interactions with the repository must use SSH. HTTPS access is not allowed.  
 
-Example:
+You must generate an SSH key and add it to your Forgejo account.
 
-`git clone git@code.swisdata.eu:your-username/processintel.git`
+How to generate and add an SSH key:  
+See [SETUP.md](SETUP.md#ssh-key-setup) for step-by-step instructions.
 
----
+### GPG Keys & Signed Commits
 
-### GPG Commit Signing
+GPG is used to cryptographically sign commits and verify authorship. All commits must be signed using GPG.  
 
-All commits **must be cryptographically signed** using a GPG key.
-
-- Unsigned commits will be rejected
-- Your GPG key must be uploaded to your Forgejo profile
-- This ensures authorship, accountability, and academic integrity
+Your public GPG key must be added to your Forgejo profile.    
 
 Enable commit signing:
-
 ```bash
-git config --global commit.gpgsign true 
+git config --global commit.gpgsign true
 git config --global user.signingkey YOUR_KEY_ID
 ```
 
----
-
-## Repository Workflow
+How to generate and add a GPG key:  
+See [SETUP.md](SETUP.md#gpg-key-setup) for detailed instructions.
 
 ### Forking the Repository
 
-All work **must** be done in a fork of the main repository.
+You must work in your own fork. The main repository is read-only for contributors. 
+Direct commits to the main repository are not allowed.  
 
-1. Create a fork of the repository on Forgejo
-2. Clone your fork locally:
-
-```bash
-git clone git@code.swisdata.eu:your-username/processintel.git
-```
-
-3. Add the upstream repository:
-
+Create and clone your fork:
 
 ```bash
-git remote add upstream git@code.swisdata.eu:SWISDATA/processintel.git
+git clone ssh://git@code.swisdata.eu:your-username/ProcessIntel.git
 ```
 
-Direct commits to the main repository are **not allowed**.
+Add the upstream repository:
+```bash
+git remote add upstream ssh://git@code.swisdata.eu:SWISDATA/ProcessIntel.git
+```
+
+## Repository Workflow
+
+All development must be performed in a personal fork of the main repository. Contributions are integrated into the main repository exclusively via Pull Requests (PRs).  
+
+Direct commits to the main repository are not allowed.
+
+**Workflow Overview**
+
+1. Fork the main repository on Forgejo
+2. Clone your fork locally
+3. Create a dedicated branch for your change
+4. Implement, document, and test your changes
+5. Push the branch to your fork
+6. Open a Pull Request
+---
+
+## Branch Guidelines
+
+- Every change must be made in its own branch.
+- Never commit directly to main. 
+- Branches must be short-lived and focused. 
+- One branch contains one logical change.  
+
+### Branch Naming Convention
+
+Use descriptive names:
+
+- add-xes-support
+- fix-event-log-parser
+- refactor-miner-interface
+- update-documentation
 
 ---
 
-## Branch Rules
+## Commit Message Guidelines
 
-- Every change must be done in **its own branch**
-- Never commit directly to `main`
-- Branch names must be **descriptive**
-### Branch Naming Examples
+Required Format:
+```
+<module>, [<submodule>]: short description
+```
 
-- `add-xes-support`
-- `add-inductive-miner`
-- `add-filtering-to-algorithms`
-- `update-happy-path`
+### Rules
+
+- Use the imperative mood ("add", "fix", "refactor")
+- Keep the description concise and specific
+- One logical change per commit
+- Do not mix unrelated changes
+
+### Examples
+- parser, xes: add support for xes format
+- miner, inductive: fix recursion depth issue
+- docs, architecture: clarify MVC responsibilities
 
 ---
 
-## Pull Requests
+## Pull Request Guidelines
 
-### One Purpose per Pull Request
-
-Each Pull Request (PR) **must do exactly one thing**.
+All contributions must be submitted via a Pull Request from a fork.
+Each Pull Request must address exactly one concern.
 
 Allowed:
-
 - One feature
 - One bug fix
 - One refactor
 
 Not allowed:
-
 - Mixing unrelated changes
 - Combining features and fixes
-- Large cleanup PRs
+- Large, unfocused cleanup PRs
 
-Split your work into **multiple PRs** if needed.
-
----
+Split work into multiple PRs if necessary.
 
 ### Pull Request Requirements
 
-Each PR must:
-
-- Be based on a fork and a dedicated branch    
-- Be formatted using **Black**
-- Include **tests** for new or changed functionality
+Each Pull Request must:
+- Be opened from a fork and a dedicated branch
+- Target the main branch of the upstream repository
+- Include a clear description of:
+     - What was changed
+     - What sections were tested
 - Pass all automated checks
-- Update documentation where applicable
-- Clearly explain what was changed and **why**
-
-PRs not meeting these requirements **will not be merged**.
+- Include required documentation and tests
 
 ---
 
@@ -138,39 +160,20 @@ This project **requires** the use of the **Black** code formatter.
 Install and run:
 
 ```bash
-pip install 
-black black .
+pip install black
+black .
 ```
-
 ---
 
-## Testing Requirements
+## Docstring Guidelines
 
-All code **must be tested** using Python's **built-in `unittest` framework**.
+### Docstring Rules
 
-- The project uses **`unittest` exclusively**
-- Do **not** introduce alternative testing frameworks (e.g. `pytest`, `nose`)
-- Tests must be reproducible, readable, and deterministic
+- Use **NumPy docstring format**
+- Be precise and explicit
+- All parameters and return values must be documented
 
-### Test Structure Guidelines
-
-- Place tests in the designated `tests/` directory
-- Name test files as `<module>/<name>_test.py`
-- Use descriptive test case and method names
-- Each test should validate **one specific behavior**
-    
-PRs without appropriate `unittest`-based tests will be rejected unless **explicitly justified**.
-
----
-
-## Docstring Guidelines (Mandatory)
-
-### Required Docstring Format
-
-All public functions, classes, and modules **must use NumPy-style docstrings**.
-This format is **mandatory**.
-
-#### Required structure
+### Required structure
 
 ```python
 """Short summary of the function.
@@ -194,34 +197,30 @@ ExceptionType
 """
 ```
 
-#### Docstring Rules
-
-- Use **NumPy docstring format**
-- Be precise and explicit
-- Describe behavior, not implementation details
-- All parameters and return values must be documented
-
-Code without proper docstrings **will not be accepted**.
-
 ---
 
-## Commit Message Guidelines
+## Testing Guildines
 
-Commit messages must follow this format:
+Testing is a core requirement for correctness, reproducibility, and validity.
 
-`<module>, <submodule>: short description`
+### Framework
 
-Rules:
+- Python's built-in unittest framework is used exclusively
+- Do not introduce alternative testing frameworks
 
-- Keep the description short and clear
-- One logical change per commit
+### Requirements
 
-Examples:
+- New functionality must include new tests
+- Tests must be deterministic and reproducible
+- Tests must not rely on external state or network access
 
-```
-parser, config: handle empty configuration files 
-docs, architecture: add system overview diagram`
-```
+### Structure
+
+- Tests must be placed in the `tests` directory
+- Test files must be named `<module>/<name>_test.py`
+- Use descriptive test class and method names
+- Each test should validate one specific behavior
+
 ---
 
 ## Review Process
@@ -233,22 +232,22 @@ docs, architecture: add system overview diagram`
 
 ---
 
-## Questions
-
-If something is unclear, open an issue or contact your supervisor.  
-As this is an academic project, **asking questions is encouraged**.
-
----
-
 ## Extending the Project
 
 Guidelines for extending the project architecture (UI pages, views, algorithms, models, and data formats) are documented separately.
 
-Before implementing new features, contributors **must read and follow**:
+Before implementing new features, contributors **should read**:
 
 - [EXTENDING.md](docs/EXTENDING.md) - Architecture and extension guidelines
 
 All extensions are expected to follow the documented MVC structure and existing templates.
+
+---
+
+## Questions
+
+If something is unclear, open an issue or contact your supervisor.  
+Do not hesitate to ask questions
 
 ---
 
