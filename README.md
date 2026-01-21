@@ -39,7 +39,7 @@
 
 ## Requirements
 
-- **Python:** 3.10 or newer  
+- **Python:** 3.12 or newer  
 - **Graphviz (required)** for process model rendering
 
 Install Graphviz from:  
@@ -87,7 +87,7 @@ pip install -r tests/requirements_test.txt
 ```
 Run all tests:
 ```bash
-python -m unittest discover -s tests
+python -m unittest discover -s tests -p "*_test.py"
 ```
 
 ---
