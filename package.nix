@@ -61,6 +61,7 @@ my-python.pkgs.buildPythonApplication rec {
 
   nativeCheckInputs = with my-python.pkgs; [
     parameterized
+    black
   ];
 
   postInstall = ''
