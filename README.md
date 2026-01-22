@@ -74,6 +74,23 @@ The application will open automatically in your default web browser.
 
 ---
 
+## Streamlit Options
+
+This application is built using **Streamlit**, which provides a wide range of configuration options.
+
+Streamlit behavior can be customized in several ways:
+
+- **Configuration file** (`.streamlit/config.toml`)
+- **Environment variables**
+- **Command-line (CLI) arguments**
+    
+These options allow you to control aspects such as server settings, theming, caching behavior, and runtime performance without modifying the application code.
+
+For a complete and up-to-date overview of all available options, please check the official [Streamlit documentation](https://docs.streamlit.io/develop/concepts/configuration/options
+).
+
+---
+
 ## Running Tests
 
 Test dependencies are listed in:
