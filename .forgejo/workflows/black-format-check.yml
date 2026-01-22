@@ -1,4 +1,4 @@
-name: Black Format Check
+name: Black
 
 on:
   push:
@@ -19,7 +19,38 @@ jobs:
   black:
     runs-on: nixos
     steps:
-    - uses: actions/checkout@v4
-    - name: Check Code Formatting with Black
+    - name: Checkout repository
+      uses: actions/checkout@v4
+      with:
+        fetch-depth: 0
+
+    - name: Detect changed Python files
       run: |
-        nix develop .#processintel --impure -c python -m black --check .
+        if [ "${{ forgejo.event_name }}" = "push" ]; then
+
+          BASE="${{ forgejo.event.before }}"
+          HEAD="${{ forgejo.event.after }}"
+          echo "Push diff: $BASE..$HEAD"
+          RANGE="$BASE..$HEAD"
+
+        elif [ "${{ forgejo.event_name }}" = "pull_request" ]; then
+
+          BASE_REF="${{ forgejo.event.pull_request.base.ref }}"
+          echo "PR base ref: $BASE_REF"
+
+          RANGE="origin/$BASE_REF...HEAD"
+        fi
+
+        git diff --name-only --diff-filter=ACMR "$RANGE" | grep -E '\.py$' > changed_files.txt || true
+
+        echo "Changed files:"
+        cat  changed_files.txt
+
+    - name: Run Black
+      run: |
+        if [ -s changed_files.txt ]; then
+          nix develop .#processintel --impure  --accept-flake-config -c \
+            python -m black --check $(< changed_files.txt)
+        else
+          echo "No Python files changed - skipping Black"
+        fi
