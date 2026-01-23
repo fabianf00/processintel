@@ -1,0 +1,29 @@
+name: Build Application
+
+on:
+  push:
+    branches: [ main ]
+    paths:
+      - "**/*.py"
+      - "package.nix"
+      - "flake.lock"
+      - "flake.nix"
+      - ".forgejo/workflows/build.yml"
+
+  pull_request:
+    branches: [ main ]
+    paths:
+      - "**/*.py"
+      - "package.nix"
+      - "flake.lock"
+      - "flake.nix"
+      - ".forgejo/workflows/build.yml"
+
+jobs:
+  build:
+    runs-on: nixos
+    steps:
+      - uses: actions/checkout@v4
+      - name: Build Application
+        run: |
+          nix build .#processintel --impure --accept-flake-config
