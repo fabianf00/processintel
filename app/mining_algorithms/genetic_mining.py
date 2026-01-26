@@ -637,16 +637,20 @@ class GeneticMining(BaseMining):
             Fitness score in [0.0, 1.0].
         """
         total_acts = max(
-            1, sum(len(trace) for trace in self.node_frequency_filtered_log)
+            1,
+            sum(
+                len(trace) * freq
+                for trace, freq in self.node_frequency_filtered_log.items()
+            ),
         )
-        total_traces = max(1, len(self.node_frequency_filtered_log))
+        total_traces = max(1, sum(self.node_frequency_filtered_log.values()))
 
         parsed_sum, completed_sum = 0, 0
 
-        for trace in self.node_frequency_filtered_log:
+        for trace, freq in self.node_frequency_filtered_log.items():
             parsed, completed = self._parse_trace_token_game(individual, trace)
-            parsed_sum += parsed
-            completed_sum += 1 if completed else 0
+            parsed_sum += parsed * freq
+            completed_sum += freq if completed else 0
 
         fitness = max(
             0.0,
