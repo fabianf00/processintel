@@ -177,12 +177,19 @@ in
       serviceConfig = {
         DynamicUser = true;
 
-        CacheDirectory = [
-          serviceName
-        ];
+        CacheDirectory = [ serviceName ];
         RuntimeDirectory = serviceName;
         RuntimeDirectoryMode = 750;
         WorkingDirectory = runtimeDir;
+
+        MemoryDenyWriteExecute = true;
+        PrivateDevices = true;
+        PrivateNetwork = true;
+        PrivateTmp = true;
+        ProtectSystem = "full";
+        ProtectHome = true;
+        ProtectProc = "invisible";
+        RestrictAddressFamilies = "AF_UNIX";
 
         ExecStartPost =
           let
@@ -211,9 +218,6 @@ in
             '';
           in
           "+${script}";
-
-        PrivateTmp = false;
-        PrivateDevices = true;
       };
     };
 
