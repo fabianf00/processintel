@@ -46,11 +46,11 @@ in
         '';
       };
 
-      maxUploadSize = lib.mkOption {
+      maxUploadSizeMb = lib.mkOption {
         type = lib.types.int;
         default = 200;
         description = ''
-          Max Upload size for the ProcessIntel service in GB
+          Max Upload size for the ProcessIntel service in MB
         '';
       };
 
@@ -84,7 +84,7 @@ in
 
         STREAMLIT_SERVER_ADDRESS = cfg.httpAddress;
         STREAMLIT_SERVER_PORT = toString cfg.httpPort;
-        STREAMLIT_SERVER_MAX_UPLOAD_SIZE = toString cfg.maxUploadSize;
+        STREAMLIT_SERVER_MAX_UPLOAD_SIZE = toString cfg.maxUploadSizeMb;
         STREAMLIT_SERVER_ENABLE_CORS = "true";
         STREAMLIT_SERVER_ENABLE_XSRF_PROTECTION = "true";
         STREAMLIT_SERVER_HEADLESS = "true";
