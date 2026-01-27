@@ -156,7 +156,11 @@ class BaseGraph:
         self.nodes: dict[str, Node] = {}
         self.edges: dict[tuple[str, str], Edge] = {}
 
-        self.graph = graphviz.Digraph()
+        self.graph = graphviz.Digraph(
+            graph_attr={"fontname": "Montserrat"},
+            node_attr={"fontname": "Montserrat"},
+            edge_attr={"fontname": "Montserrat"},
+        )
 
         self.graph.attr("graph", **graph_attributes)
 
