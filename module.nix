@@ -75,6 +75,7 @@ let
         Fonts
       -->
       <dir>${pkgs.source-sans}/share/fonts</dir>
+      <dir>${pkgs.montserrat}/share/fonts</dir>
     </fontconfig>
   '';
 
