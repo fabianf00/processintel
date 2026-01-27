@@ -10,12 +10,12 @@ logging_config = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "level": "DEBUG",
+            "level": "WARN",
             "formatter": "simple",
             "stream": "ext://sys.stdout",
         }
     },
-    "loggers": {"": {"level": "INFO", "handlers": ["console"]}},
+    "loggers": {"": {"level": "WARN", "handlers": ["console"]}},
 }
 
 logging.config.dictConfig(logging_config)
