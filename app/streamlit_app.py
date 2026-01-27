@@ -19,7 +19,7 @@ st.set_page_config(
     layout="wide",
 )
 
-APP_TMP_ROOT = os.path.join(tempfile.gettempdir(), "processintel")
+APP_TMP_ROOT = os.getenv("PROCESSINTEL_TMP_DIR")
 os.makedirs(APP_TMP_ROOT, exist_ok=True)
 
 if "session_tmp_dir" not in st.session_state:
