@@ -63,7 +63,8 @@ class BaseView(ABC):
         title : str
             The title of the page.
         """
-        st.title(title)
+        if title:
+            st.title(title)
 
     def set_controller(self, controller):
         """Sets the controller for the view.
