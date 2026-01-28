@@ -1,42 +1,33 @@
-import os
 import streamlit as st
-import tempfile
-
-
-from app.config import algorithm_routes
-from app.ui.algorithm_explanation_ui.algorithm_explanation_controller import (
-    AlgorithmExplanationController,
-)
-from app.ui.column_selection_ui.column_selection_controller import (
-    ColumnSelectionController,
-)
-from app.ui.export_ui.export_controller import ExportController
-from app.ui.home_ui.home_controller import HomeController
+import os
+from app.config import ASSETS_DIR
 
 st.set_page_config(
     page_title="ProcessIntel",
-    page_icon=":bar_chart:",
+    page_icon=os.path.join(ASSETS_DIR, "process_intel_logo.svg"),
     layout="wide",
 )
 
-APP_TMP_ROOT = os.getenv("PROCESSINTEL_TMP_DIR")
-os.makedirs(APP_TMP_ROOT, exist_ok=True)
+home = st.Page(
+    "pages/main_app.py",
+    title="ProcessIntel",
+    default=True,
+)
+imprint = st.Page("pages/imprint.py", title="Imprint", url_path="imprint")
+privacy = st.Page("pages/privacy.py", title="Privacy Policy", url_path="privacy")
 
-if "session_tmp_dir" not in st.session_state:
-    st.session_state.session_tmp_dir = tempfile.mkdtemp(
-        dir=APP_TMP_ROOT, prefix="session_"
-    )
 
-if "page" not in st.session_state:
-    st.session_state.page = "Home"
+pg = st.navigation([home, imprint, privacy], position="top")
 
-if st.session_state.page == "Home":
-    HomeController().start()
-elif st.session_state.page == "Algorithm":
-    algorithm_routes[st.session_state.algorithm]().start()
-elif st.session_state.page == "ColumnSelection":
-    ColumnSelectionController().start()
-elif st.session_state.page == "Export":
-    ExportController().start()
-elif st.session_state.page == "Documentation":
-    AlgorithmExplanationController().start()
+if st.context.theme.type == "light":
+    logo = "logo.svg"
+else:
+    logo = "logo_bright.svg"
+
+st.logo(
+    os.path.join(ASSETS_DIR, logo),
+    size="large",
+    link="https://www.swisdata.eu/",
+)
+
+pg.run()
