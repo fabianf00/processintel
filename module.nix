@@ -98,6 +98,14 @@ in
         '';
       };
 
+      logLevel = lib.mkOption {
+        type = lib.types.str;
+        default = "WARN";
+        description = ''
+          Log level for the service
+        '';
+      };
+
       domainNameAliases = lib.mkOption {
         type = lib.types.listOf lib.types.str;
         description = ''
@@ -160,6 +168,7 @@ in
         PROCESSINTEL_DOCS_DIR = "${package}/docs";
         PROCESSINTEL_TMP_DIR = "${cacheDir}/tmp";
         PROCESSINTEL_ASSETS_DIR = "${package}/assets";
+        PROCESSINTEL_LOG_LEVEL = cfg.logLevel;
 
         STREAMLIT_SERVER_ADDRESS = if cfg.production then "unix://${socketFile}" else cfg.httpAddress;
         STREAMLIT_SERVER_PORT = toString cfg.httpPort;

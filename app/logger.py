@@ -1,5 +1,8 @@
 import logging
 import logging.config
+from os import getenv
+
+LOG_LEVEL = getenv("PROCESSINTEL_LOG_LEVEL", "warn").upper()
 
 logging_config = {
     "version": 1,
@@ -10,12 +13,12 @@ logging_config = {
     "handlers": {
         "console": {
             "class": "logging.StreamHandler",
-            "level": "WARN",
+            "level": LOG_LEVEL,
             "formatter": "simple",
             "stream": "ext://sys.stdout",
         }
     },
-    "loggers": {"": {"level": "WARN", "handlers": ["console"]}},
+    "loggers": {"": {"level": LOG_LEVEL, "handlers": ["console"]}},
 }
 
 logging.config.dictConfig(logging_config)
