@@ -11,6 +11,7 @@ from app.ui.inductive_miner_ui.inductive_miner_controller import (
 )
 
 DOCS_DIR = getenv("PROCESSINTEL_DOCS_DIR") or "docs"
+ASSETS_DIR = getenv("PROCESSINTEL_ASSETS_DIR") or "assets"
 
 # colon_substitute is used to replace the colon in event names to make them compatible with graphviz.
 colon_substitute = "___"

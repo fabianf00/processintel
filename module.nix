@@ -159,6 +159,7 @@ in
 
         PROCESSINTEL_DOCS_DIR = "${package}/docs";
         PROCESSINTEL_TMP_DIR = "${cacheDir}/tmp";
+        PROCESSINTEL_ASSETS_DIR = "${package}/assets";
 
         STREAMLIT_SERVER_ADDRESS = if cfg.production then "unix://${socketFile}" else cfg.httpAddress;
         STREAMLIT_SERVER_PORT = toString cfg.httpPort;
