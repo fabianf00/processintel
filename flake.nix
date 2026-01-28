@@ -41,6 +41,7 @@
       {
         packages = rec {
           processintel = pkgs.callPackage ./package.nix { inherit (pkgs) python3; };
+          default = processintel;
         };
       }
     );
