@@ -58,7 +58,7 @@ class HomeView(BaseView):
                 navigation_button(
                     label="Import Model",
                     route="Algorithm",
-                    use_container_width=True,
+                    width="stretch",
                     beforeNavigate=self.controller.set_model_and_algorithm,
                     args=(model, algorithm_mappings[selection]),
                 )
@@ -84,7 +84,7 @@ class HomeView(BaseView):
                 navigation_button(
                     label="Mine from File",
                     route="ColumnSelection",
-                    use_container_width=True,
+                    width="stretch",
                     beforeNavigate=self.controller.set_df,
                     args=(delimiter,),
                 )

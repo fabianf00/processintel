@@ -1,9 +1,7 @@
 import streamlit as st
 
 
-def home_button(
-    label: str = "Home", route: str = "Home", use_container_width=False
-) -> None:
+def home_button(label: str = "Home", route: str = "Home", width="content") -> None:
     """Create a button to navigate to the home page.
 
     Parameters
@@ -12,15 +10,15 @@ def home_button(
         button label, by default "Home"
     route : str, optional
         route to navigate to, by default "Home"
-    use_container_width : bool, optional
-        set the button width to the container width, by default False
+    width : str, optional
+        set the button width to the container width, by default content
     """
     st.button(
         label,
         type="secondary",
         on_click=to_home,
         args=(route,),
-        use_container_width=use_container_width,
+        width=width,
     )
 
 
@@ -30,7 +28,7 @@ def to_home(route="Home"):
     Parameters
     ----------
     route : str, optional
-        _description_, by default "Home"
+        route path, by default "Home"
     """
     error_message = None
     if "error" in st.session_state:
@@ -45,7 +43,7 @@ def navigation_button(
     label: str,
     route: str,
     type="primary",
-    use_container_width=False,
+    width="content",
     beforeNavigate=None,
     args=None,
     disabled=False,
@@ -61,8 +59,8 @@ def navigation_button(
         route to navigate to
     type : str, optional
         button type, by default "primary"
-    use_container_width : bool, optional
-        set the button width to the container width, by default False
+    width : str, optional
+        set the button width to the container width, by default content
     beforeNavigate : function, optional
         function to execute before navigating, by default None
     args : tuple, optional
@@ -79,7 +77,7 @@ def navigation_button(
         type=type,
         on_click=navigate_to,
         args=(route, beforeNavigate, *args),
-        use_container_width=use_container_width,
+        width=width,
         disabled=disabled,
         key=key,
     )

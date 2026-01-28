@@ -129,7 +129,7 @@ class BaseAlgorithmView(BaseView):
     def display_back_button(self) -> None:
         """Displays the back button. The button navigates back to the home page."""
         with self.back_button_column:
-            home_button("Back", use_container_width=True)
+            home_button("Back", width="stretch")
 
     def display_export_button(self, disabled=False) -> None:
         """Displays the export button. The button is disabled while the graph is loading.
@@ -143,7 +143,7 @@ class BaseAlgorithmView(BaseView):
             navigation_button(
                 "Export",
                 "Export",
-                use_container_width=True,
+                width="stretch",
                 disabled=disabled,
                 key="export_button-" + str(disabled),
             )
@@ -214,5 +214,5 @@ class BaseAlgorithmView(BaseView):
                 navigation_button(
                     "Algorithm Explanation",
                     "Documentation",
-                    use_container_width=True,
+                    width="stretch",
                 )

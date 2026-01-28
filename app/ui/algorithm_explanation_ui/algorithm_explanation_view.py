@@ -30,5 +30,5 @@ class AlgorithmExplanationView(BaseView):
                 "Back to Algorithm Page",
                 route="Algorithm",
                 type="secondary",
-                use_container_width=True,
+                width="stretch",
             )

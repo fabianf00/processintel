@@ -106,7 +106,7 @@ class BaseColumnSelectionView(BaseView):
         """Displays the back button in the back_col."""
         with self.back_col:
             st.write("")
-            home_button(label="Back", use_container_width=True)
+            home_button(label="Back", width="stretch")
 
     def display_mine_button(self):
         """Displays the mine button in the mine_col."""
@@ -115,7 +115,7 @@ class BaseColumnSelectionView(BaseView):
             navigation_button(
                 label="Mine",
                 route="Algorithm",
-                use_container_width=True,
+                width="stretch",
                 beforeNavigate=self.controller.on_mine_click,
             )
 
@@ -130,7 +130,7 @@ class BaseColumnSelectionView(BaseView):
         with self.df_container:
             st.dataframe(
                 styled_df,
-                use_container_width=True,
+                width="stretch",
                 hide_index=True,
                 height=500,
             )
