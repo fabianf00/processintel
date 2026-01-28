@@ -1,9 +1,18 @@
+import base64
+import os
 import streamlit as st
 
+
 from app.components.buttons import navigation_button
-from app.config import algorithm_mappings
+from app.config import algorithm_mappings, ASSETS_DIR
 from app.ui.base_ui.base_view import BaseView
 from app.components.footer import footer
+
+
+@st.cache_data
+def load_svg_base64(path: str) -> str:
+    with open(path, "rb") as f:
+        return base64.b64encode(f.read()).decode("utf-8")
 
 
 class HomeView(BaseView):
@@ -17,7 +26,23 @@ class HomeView(BaseView):
     def display_intro(self):
         """Displays the introduction text for the Home page."""
         with self.content_column:
-            st.title("ProcessIntel")
+            svg_base64 = load_svg_base64(
+                os.path.join(ASSETS_DIR, "process_intel_logo.svg")
+            )
+            st.markdown(
+                f"""
+                <div style="display:flex; align-items:center; gap:10px;">
+                    <h1 style="margin:0;">ProcessIntel</h1>
+                    <img
+                        src="data:image/svg+xml;base64,{svg_base64}"
+                        width="60"
+                        style="height:auto;"
+                    />
+                </div>
+            """,
+                unsafe_allow_html=True,
+            )
+
             st.write(
                 "Welcome to ProcessIntel the transparent open-source application for process mining, event log visualization, and interactive exploration of process models."
             )
@@ -103,18 +128,6 @@ class HomeView(BaseView):
                 )
 
     def display_disclaimer(self):
-        if False:
-            with self.content_column:
-                st.write(
-                    """  
-**Disclaimer**  
-ProcessIntel is hosted and operated as a service by SWISDATA <https://swisdata.eu>  
-The application was developed by several authors, including developers from SWISDATA, but mainly as part of bachelor's theses at the University of Vienna under the supervision of Dr. Marian LUX.
-
-The source code for self hosting and further development is available at the following Link: <https://code.swisdata.eu/SWISDATA/ProcessIntel>
-    """
-                )
-
         footer(
             """<div>
                 <strong>Disclaimer</strong><br>
@@ -126,6 +139,12 @@ The source code for self hosting and further development is available at the fol
                 Source code for self-hosting and further development:
                 <a href="https://code.swisdata.eu/SWISDATA/ProcessIntel" target="_blank">
                     https://code.swisdata.eu/SWISDATA/ProcessIntel
+                </a> <br>
+                ProcessIntel is provided "as is" and under the MIT License.<br>
+                No liability is assumed for the correctness, completeness, or reliability of the software or the results it produces.<br>
+                For questions or feedback, please contact us via:
+                <a href="https://www.swisdata.eu/contact/" target="_blank">
+                    https://www.swisdata.eu/contact/
                 </a>
             </div>"""
         )
