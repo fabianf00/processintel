@@ -46,6 +46,33 @@ def apply_streamlit_env(prefix="STREAMLIT_"):
 def main():
     apply_streamlit_env()
 
+    config.set_option(
+        "theme.font",
+        "Montserrat:https://processintel.org/api/font/montserrat/font.css",
+    )
+    config.set_option(
+        "theme.sidebar.font",
+        "Montserrat:https://processintel.org/api/font/montserrat/font.css",
+    )
+
+    config.set_option(
+        "theme.light.font",
+        "Montserrat:https://processintel.org/api/font/montserrat/font.css",
+    )
+    config.set_option(
+        "theme.light.sidebar.font",
+        "Montserrat:https://processintel.org/api/font/montserrat/font.css",
+    )
+
+    config.set_option(
+        "theme.dark.font",
+        "Montserrat:https://processintel.org/api/font/montserrat/font.css",
+    )
+    config.set_option(
+        "theme.dark.sidebar.font",
+        "Montserrat:https://processintel.org/api/font/montserrat/font.css",
+    )
+
     app_path = os.path.join(os.path.dirname(__file__), "streamlit_app.py")
     streamlit_run(
         app_path,

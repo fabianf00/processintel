@@ -12,22 +12,13 @@ home = st.Page(
     "pages/main_app.py",
     title="ProcessIntel",
     default=True,
+    url_path="",
 )
 imprint = st.Page("pages/imprint.py", title="Imprint", url_path="imprint")
 privacy = st.Page("pages/privacy.py", title="Privacy Policy", url_path="privacy")
 
 
 pg = st.navigation([home, imprint, privacy], position="top")
-
-st.html(
-    """
-    <style>
-    html, body, [class*="st-"]:not([data-testid="stIconMaterial"]) {
-        font-family: "Montserrat", sans-serif;
-    }
-    </style>
-    """
-)
 
 if st.context.theme.type == "light":
     logo = "logo.svg"
