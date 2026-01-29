@@ -135,6 +135,7 @@ const InteractiveGraph: React.FC<ComponentProps> = ({ args }) => {
           position: "absolute",
           height: "100%",
           width: "100%",
+          fontSizeAdjust: "0.4",
         }}
       ></div>
       {isRendering ? (
