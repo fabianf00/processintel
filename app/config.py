@@ -25,7 +25,6 @@ cluster_seperator = "---"
 # The allowed file extensions for importing data.
 import_file_types_mapping = {
     "csv": [".csv"],
-    "pickle": [".pickle", ".pkl"],
 }
 # List of all allowed file extensions.
 import_file_suffixes = [
