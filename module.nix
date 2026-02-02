@@ -277,6 +277,9 @@ in
         proxyPass = "http://${serviceName}/";
         proxyWebsockets = true;
         recommendedProxySettings = true;
+        extraConfig = ''
+          client_max_body_size ${toString cfg.maxUploadSizeMb}m;
+        '';
       };
 
       locations."/stream" = {
