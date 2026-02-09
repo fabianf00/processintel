@@ -64,6 +64,12 @@ my-python.pkgs.buildPythonApplication rec {
     black
   ];
 
+  checkPhase = ''
+    echo "Run Unittests"
+    python -m unittest discover -s tests -p "*_test.py" -v
+
+  '';
+
   postInstall = ''
     mkdir -p $out/docs/algorithms
     mkdir -p $out/assets
