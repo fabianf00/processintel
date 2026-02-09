@@ -103,7 +103,7 @@ Use descriptive names:
 
 Required Format:
 ```
-<module>, [<submodule>]: short description
+<module>.[<submodule>]: short description
 ```
 
 ### Rules
@@ -114,9 +114,9 @@ Required Format:
 - Do not mix unrelated changes
 
 ### Examples
-- parser, xes: add support for xes format
-- miner, inductive: fix recursion depth issue
-- docs, architecture: clarify MVC responsibilities
+- parser.xes: add support for xes format
+- miner.inductive: fix recursion depth issue
+- docs.architecture: clarify MVC responsibilities
 
 ---
 
