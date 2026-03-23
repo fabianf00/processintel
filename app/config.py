@@ -6,6 +6,9 @@ from app.ui.genetic_miner_ui.genetic_miner_controller import GeneticMinerControl
 from app.ui.heuristic_miner_ui.heuristic_miner_controller import (
     HeuristicMinerController,
 )
+from app.ui.inductive_miner_infrequent_ui.inductive_miner_infrequent_controller import (
+    InductiveMinerInfrequentController,
+)
 from app.ui.inductive_miner_ui.inductive_miner_controller import (
     InductiveMinerController,
 )
@@ -59,6 +62,7 @@ algorithm_mappings = {
     "Inductive Mining": "inductive",
     "Alpha Mining": "alpha",
     "Genetic Mining": "genetic",
+    "Inductive Mining Infrequent": "inductive infrequent",
 }
 # Maps the algorithm routes to the paths of the documentation files.
 docs_path_mappings = {
@@ -67,6 +71,7 @@ docs_path_mappings = {
     "inductive": f"{DOCS_DIR}/algorithms/inductive_miner.md",
     "alpha": f"{DOCS_DIR}/algorithms/alpha_miner.md",
     "genetic": f"{DOCS_DIR}/algorithms/genetic_miner.md",
+    "inductive infrequent": f"{DOCS_DIR}/algorithms/inductive_miner_infrequent.md",
 }
 
 # Maps the algorithm routes to the controllers.
@@ -76,4 +81,5 @@ algorithm_routes = {
     "inductive": InductiveMinerController,
     "alpha": AlphaMinerController,
     "genetic": GeneticMinerController,
+    "inductive infrequent": InductiveMinerInfrequentController,
 }
