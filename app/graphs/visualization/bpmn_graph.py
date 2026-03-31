@@ -309,7 +309,14 @@ class BPMNGraph(BaseGraph):
             the id of the silent activity node
         """
         node_id = f"silent_activity_{self.silent_activities_count}"
-        self.add_node(id=node_id, label=" ", shape="point", fillcolor="#FFFFFF")
+        self.add_node(
+            id=node_id,
+            label="τ",
+            shape="circle",
+            width="0.3",
+            height="0.3",
+            fillcolor="#E0E0E0",
+        )
         self.silent_activities_count += 1
         return node_id
 
