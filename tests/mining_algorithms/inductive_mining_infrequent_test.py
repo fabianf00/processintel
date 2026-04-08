@@ -1,55 +1,9 @@
 import unittest
-import sys
-import os
 from unittest.mock import patch
 
 from app.graphs.dfg import DFG
 from app.mining_algorithms.inductive_mining_infrequent import InductiveMiningInfrequent
-
-# Add parent directories to path for imports
-sys.path.insert(
-    0,
-    os.path.join(
-        os.path.dirname(os.path.abspath(__file__)), "..", "..", "..", "..", "src"
-    ),
-)
-
-
-def isProcessTreeEqual(tree1, tree2):
-    """Process tree equality checker."""
-    if type(tree1) != type(tree2):
-        return False
-
-    if isinstance(tree1, str) or isinstance(tree1, int):
-        return tree1 == tree2
-
-    if not isinstance(tree1, tuple):
-        raise Exception("Invalid tree type")
-
-    if len(tree1) != len(tree2):
-        return False
-
-    operation = tree1[0]
-    if operation != tree2[0]:
-        return False
-
-    # ordered cuts first
-    if operation == "seq":
-        return all(isProcessTreeEqual(tree1[i], tree2[i]) for i in range(1, len(tree1)))
-    if operation == "loop":
-        if not isProcessTreeEqual(tree1[1], tree2[1]):
-            return False
-
-    for i in range(1, len(tree1)):
-        foundEqual = False
-        for j in range(1, len(tree2)):
-            if isProcessTreeEqual(tree1[i], tree2[j]):
-                foundEqual = True
-                break
-        if not foundEqual:
-            return False
-
-    return True
+from tests.utils.process_tree_utils import isProcessTreeEqual
 
 
 class TestInductiveMiningInfrequent(unittest.TestCase):
@@ -284,9 +238,6 @@ class TestInductiveMiningInfrequent(unittest.TestCase):
     def test_dfg_filtering_logic(self):
         """Test the logic of DFG filtering with different thresholds."""
         mining = InductiveMiningInfrequent(self.rare_edges_log)
-
-        # Create DFG and test filtering
-        full_dfg = DFG(self.rare_edges_log)
 
         # Test with different thresholds
         for threshold in [0.1, 0.3, 0.5]:
