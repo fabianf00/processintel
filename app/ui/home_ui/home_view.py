@@ -229,14 +229,6 @@ class HomeView(BaseView):
                     st.subheader("Data Preview")
                     st.dataframe(df.head(10), width="stretch")
 
-                st.download_button(
-                    label="Download CSV File",
-                    data=csv_data,
-                    file_name=csv_filename,
-                    mime="text/csv",
-                    key="download_csv_file",
-                )
-
     def _display_csv_to_xes_converter(self):
         """Render the CSV -> XES converter UI"""
         csv_file = st.file_uploader(

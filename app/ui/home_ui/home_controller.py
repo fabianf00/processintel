@@ -1,5 +1,7 @@
 import streamlit as st
 from app.analysis.detection_model import DetectionModel
+from app.analysis.predictions_model import PredictionModel
+from app.converters.csv_to_xes_converter import CsvToXesConverter
 from app.converters.xes_to_csv_converter import XesToCsvConverter
 from app.exceptions.io_exceptions import (
     UnsupportedFileTypeException,
@@ -21,6 +23,7 @@ class HomeController(BaseController):
         import_model: ImportOperations = None,
         export_model: ExportOperations = None,
         supported_file_types: list[str] = None,
+        prediction_model: PredictionModel = None,
     ):
         """Initializes the controller for the Home page.
 
@@ -40,6 +43,7 @@ class HomeController(BaseController):
         self.detection_model = DetectionModel()
         self.import_model = ImportOperations()
         self.export_model = ExportOperations()
+        self.prediction_model = PredictionModel()
         if views is None:
             from app.ui.home_ui.home_view import HomeView
 
@@ -54,6 +58,7 @@ class HomeController(BaseController):
 
         self.supported_file_types = supported_file_types
 
+        self.csv_to_xes_converter = CsvToXesConverter()
         self.xes_to_csv_converter = XesToCsvConverter()
 
     def get_page_title(self) -> str:
@@ -151,6 +156,67 @@ class HomeController(BaseController):
 
             st.session_state.df = df
 
+    def convert_csv_to_xes(
+        self,
+        csv_file,
+        delimiter: str,
+        case_id_col: str,
+        activity_col: str,
+        timestamp_col: str,
+    ):
+        """Convert CSV to XES file and store result in session state.
+
+        Parameters
+        ----------
+        csv_file : UploadedFile
+            The uploaded CSV file to convert.
+        delimiter : str
+            The delimiter used for the CSV file.
+        case_id_col : str
+            Column containing case IDs.
+        activity_col : str
+            Column containing name of activities.
+        timestamp_col : str
+            Column containing timestamps.
+        """
+        self._reset_csv_to_xes_result()
+        try:
+            effective_delimiter = self._determine_delimiter(csv_file, delimiter)
+            if effective_delimiter == "":
+                st.error("Please enter a custom delimiter.")
+                return
+
+            df = self.import_model.read_csv(csv_file, effective_delimiter)
+
+            xes_tree, summary, dropped_rows = self.csv_to_xes_converter.convert(
+                df,
+                case_id_col,
+                activity_col,
+                timestamp_col,
+            )
+
+            if dropped_rows > 0:
+                st.warning(
+                    f"Removed {dropped_rows} rows with missing values in required columns."
+                )
+
+            xes_bytes = self.export_model.export_to_xes_bytes(xes_tree)
+
+            original_filename = csv_file.name.replace(".csv", "")
+            xes_filename = f"{original_filename}_converted.xes"
+
+            st.session_state.converted_xes_summary = summary
+            st.session_state.converted_xes_bytes = xes_bytes
+            st.session_state.converted_xes_filename = xes_filename
+            st.session_state.converted_xes_ready = True
+            st.session_state.converted_xes_dropped_rows = dropped_rows
+
+        except ValueError as e:
+            st.error(f"Error converting CSV to XES: {str(e)}")
+        except Exception as e:
+            self.logger.exception(e)
+            st.error(f"Error converting CSV to XES: {str(e)}")
+
     def convert_xes_to_csv(
         self,
         xes_file,
@@ -187,6 +253,14 @@ class HomeController(BaseController):
             self.logger.exception(e)
             st.error(f"Error converting XES to CSV: {str(e)}")
 
+    def _reset_csv_to_xes_result(self) -> None:
+        """Reset CSV to XES conversion results stored in session state."""
+        st.session_state.converted_xes_summary = None
+        st.session_state.converted_xes_bytes = None
+        st.session_state.converted_xes_filename = None
+        st.session_state.converted_xes_ready = False
+        st.session_state.converted_xes_dropped_rows = 0
+
     def _reset_xes_to_csv_result(self) -> None:
         """Reset XES to CSV conversion results stored in session state."""
         st.session_state.include_attributes = False
@@ -221,6 +295,58 @@ class HomeController(BaseController):
                 delimiter = ","
         return delimiter
 
+    def determine_columns(self, csv_file, delimiter: str) -> list[str]:
+        """Determine CSV columns using the effective delimiter.
+
+        Parameters
+        ----------
+        csv_file : UploadedFile
+            The uploaded CSV file.
+        delimiter : str
+            The delimiter to use. If set to "auto", it is detected automatically.
+
+        Returns
+        -------
+        list[str]
+            List of available column names.
+        """
+        available_columns = []
+        try:
+            effective_delimiter = self._determine_delimiter(csv_file, delimiter)
+            df_preview = self.import_model.read_csv(csv_file, effective_delimiter)
+            available_columns = df_preview.columns.tolist()
+            csv_file.seek(0)
+        except Exception:
+            available_columns = []
+
+        return available_columns
+
+    def predict_available_columns(
+        self, available_columns: list[str]
+    ) -> tuple[str | None, str | None, str | None]:
+        """Predict timestamp, case ID, and activity columns.
+
+        Parameters
+        ----------
+        available_columns : list[str]
+            The available CSV columns.
+
+        Returns
+        -------
+        tuple[str | None, str | None, str | None]
+            Predicted timestamp, case ID, and activity columns.
+        """
+        if not available_columns:
+            return None, None, None
+
+        predicted_time_col, predicted_case_col, predicted_activity_col = (
+            self.prediction_model.predict_columns(
+                available_columns,
+                ["time_column", "case_column", "activity_column"],
+            )
+        )
+        return predicted_time_col, predicted_case_col, predicted_activity_col
+
     def handle_xes_to_csv_input_change(
         self, xes_file, delimiter: str, include_all_attributes: bool
     ) -> None:
@@ -245,6 +371,58 @@ class HomeController(BaseController):
         if current_signature != previous_signature:
             st.session_state.xes_to_csv_input_signature = current_signature
             self._reset_xes_to_csv_result()
+
+    def handle_csv_to_xes_input_change(
+        self,
+        csv_file,
+        delimiter_type: str,
+        delimiter: str,
+        available_columns: list[str],
+    ) -> None:
+        """Handle changes from CSV to XES converter inputs.
+
+        Parameters
+        ----------
+        csv_file : UploadedFile | None
+            The uploaded CSV file.
+        delimiter_type : str
+            The selected delimiter mode (Auto-detect or Custom).
+        delimiter : str
+            The delimiter value used for parsing the CSV file.
+        available_columns: list[str]
+            The columns detected from CSV file.
+        """
+        current_signature = (
+            csv_file.name if csv_file is not None else None,
+            delimiter_type,
+            delimiter,
+            tuple(available_columns),
+        )
+        previous_signature = st.session_state.get("csv_to_xes_input_signature")
+        if current_signature != previous_signature:
+            for key in (
+                "csv_case_id_col",
+                "csv_activity_col",
+                "csv_timestamp_col",
+            ):
+                if key in st.session_state:
+                    del st.session_state[key]
+            st.session_state.csv_to_xes_input_signature = current_signature
+            self._reset_csv_to_xes_result()
+
+    def handle_csv_to_xes_column_change(self, column_mapping: dict[str, str]):
+        """Handle column changes in CSV to XES converter in selectbox.
+
+        Parameters
+        ----------
+        column_mapping : dict[str, str]
+            The column mappings of required XES columns, used to detect if user changed one of the column selections.
+        """
+        current_signature = tuple(column_mapping.items())
+        previous_signature = st.session_state.get("csv_to_xes_mapping_signature")
+        if current_signature != previous_signature:
+            st.session_state.csv_to_xes_mapping_signature = current_signature
+            self._reset_csv_to_xes_result()
 
     def run(self, selected_view, index):
         """Runs the controller for the Home page. This method is called to display the Home page and to react to user input.
