@@ -1,9 +1,11 @@
 import streamlit as st
 from app.analysis.detection_model import DetectionModel
+from app.converters.xes_to_csv_converter import XesToCsvConverter
 from app.exceptions.io_exceptions import (
     UnsupportedFileTypeException,
     NotImplementedFileTypeException,
 )
+from app.io_operations.export_operations import ExportOperations
 from app.io_operations.import_operations import ImportOperations
 from app.logger import get_logger
 from app.ui.base_ui.base_controller import BaseController
@@ -17,6 +19,7 @@ class HomeController(BaseController):
         views=None,
         detection_model: DetectionModel = None,
         import_model: ImportOperations = None,
+        export_model: ExportOperations = None,
         supported_file_types: list[str] = None,
     ):
         """Initializes the controller for the Home page.
@@ -29,11 +32,14 @@ class HomeController(BaseController):
             The detection model for detecting file types and delimiters. If None is passed, a new instance is created, by default None
         import_model : ImportOperations, optional
             The import operations model for reading files. If None is passed, a new instance is created, by default None
+        export_model : ExportOperations, optional
+            The export operations model for writing or exporting files. If None is passed a new instance is created, by default None
         supported_file_types : list[str], optional
             The supported file types. If None is passed, the file suffixes from the config file are used, by default None
         """
         self.detection_model = DetectionModel()
         self.import_model = ImportOperations()
+        self.export_model = ExportOperations()
         if views is None:
             from app.ui.home_ui.home_view import HomeView
 
@@ -48,12 +54,14 @@ class HomeController(BaseController):
 
         self.supported_file_types = supported_file_types
 
+        self.xes_to_csv_converter = XesToCsvConverter()
+
     def get_page_title(self) -> str:
         """Returns the page title."""
         return ""
 
     def process_session_state(self):
-        """Processes the session state. Checks if a file has been uploaded and stores it in a instance variable."""
+        """Process the session state and store uploaded import and converter files."""
         super().process_session_state()
         self.uploaded_file = st.session_state.get("uploaded_file", None)
 
@@ -143,6 +151,50 @@ class HomeController(BaseController):
 
             st.session_state.df = df
 
+    def convert_xes_to_csv(
+        self,
+        xes_file,
+        delimiter: str,
+        include_all_attributes: bool,
+    ):
+        """Convert XES to CSV and store result in session state.
+
+        Parameters
+        ----------
+        xes_file : UploadedFile
+            The uploaded XES file to convert.
+        delimiter : str
+            The delimiter used for the CSV file.
+        include_all_attributes: bool
+            Whether to include all attributes in the CSV. If True, preserves original XES column names.
+            If False, keeps only essential columns with user-friendly names.
+        """
+        self._reset_xes_to_csv_result()
+        try:
+            xes_tree = self.import_model.read_xes(xes_file)
+            df = self.xes_to_csv_converter.convert(xes_tree, include_all_attributes)
+
+            original_filename = xes_file.name.replace(".xes", "")
+            csv_filename = f"{original_filename}_converted.csv"
+            csv_data = self.export_model.export_to_csv_data(df, delimiter)
+
+            st.session_state.converted_csv_df = df
+            st.session_state.converted_csv_data = csv_data
+            st.session_state.converted_csv_filename = csv_filename
+            st.session_state.converted_csv_ready = True
+
+        except Exception as e:
+            self.logger.exception(e)
+            st.error(f"Error converting XES to CSV: {str(e)}")
+
+    def _reset_xes_to_csv_result(self) -> None:
+        """Reset XES to CSV conversion results stored in session state."""
+        st.session_state.include_attributes = False
+        st.session_state.converted_csv_df = None
+        st.session_state.converted_csv_data = None
+        st.session_state.converted_csv_filename = None
+        st.session_state.converted_csv_ready = False
+
     def _determine_delimiter(self, csv_file, delimiter: str) -> str:
         """Determine the delimiter for a CSV file.
         If the delimiter is set to "auto", the method detects the delimiter using the detection_model.
@@ -169,6 +221,31 @@ class HomeController(BaseController):
                 delimiter = ","
         return delimiter
 
+    def handle_xes_to_csv_input_change(
+        self, xes_file, delimiter: str, include_all_attributes: bool
+    ) -> None:
+        """Handle changes in from XES to CSV converter inputs.
+
+        Parameters
+        ----------
+        xes_file : UploadedFile | None
+            The uploaded XES file.
+        delimiter : str
+            The selected delimiter.
+        include_all_attributes : bool
+            Whether to include all attributes in the CSV. If True, preserves original XES column names.
+            If False, keeps only essential columns with user-friendly names.
+        """
+        current_signature = (
+            xes_file.name if xes_file is not None else None,
+            delimiter,
+            include_all_attributes,
+        )
+        previous_signature = st.session_state.get("xes_to_csv_input_signature")
+        if current_signature != previous_signature:
+            st.session_state.xes_to_csv_input_signature = current_signature
+            self._reset_xes_to_csv_result()
+
     def run(self, selected_view, index):
         """Runs the controller for the Home page. This method is called to display the Home page and to react to user input.
 
@@ -184,5 +261,6 @@ class HomeController(BaseController):
         selected_view.display_file_upload(self.supported_file_types)
         if self.uploaded_file is not None:
             self.process_file(selected_view)
+        selected_view.display_file_converter()
 
         selected_view.display_disclaimer()
