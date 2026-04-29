@@ -46,7 +46,8 @@ class HomeView(BaseView):
             st.write(
                 "Welcome to ProcessIntel the transparent open-source application for process mining, event log visualization, and interactive exploration of process models."
             )
-            st.write("""ProcessIntel enables you to:
+            st.write(
+                """ProcessIntel enables you to:
 - import and transform event logs
 - discover process models 
   - by using state-of-the-art process mining algorithms 
@@ -56,7 +57,8 @@ class HomeView(BaseView):
 - export
   - process models
   - your workspace
-  """)
+  """
+            )
 
     def display_file_upload(self, file_types: list[str]):
         """Displays the file upload component.
@@ -106,7 +108,7 @@ class HomeView(BaseView):
         Parameters
         ----------
         detected_delimiter : str
-            The detected delimiter of the CSV file. For file types that do not use a delimeter,
+            The detected delimiter of the CSV file. For file types that do not use a delimiter,
             an emtpy string is passed.
         show_delimiter : bool, optional
             Whether to display the delimiter input field, by default True.
@@ -238,8 +240,178 @@ class HomeView(BaseView):
             key="convert_csv",
         )
 
+        if csv_file is not None:
+            delimiter_col1, delimiter_col2 = st.columns(2)
+            with delimiter_col1:
+                delimiter_type = st.radio(
+                    "Delimiter type:",
+                    ["Auto-detect", "Custom"],
+                    key="csv_delimiter_type",
+                    horizontal=True,
+                )
+
+            with delimiter_col2:
+                if delimiter_type == "Custom":
+                    delimiter = st.text_input(
+                        "Enter delimiter:",
+                        value=",",
+                        key="csv_custom_delimiter",
+                    )
+                else:
+                    delimiter = "auto"
+
+            st.markdown("**Column Mapping:**")
+            available_columns = self.controller.determine_columns(csv_file, delimiter)
+            predicted_time_col = None
+            predicted_case_col = None
+            predicted_activity_col = None
+
+            predicted_time_col, predicted_case_col, predicted_activity_col = (
+                self.controller.predict_available_columns(available_columns)
+            )
+
+            col1, col2, col3 = st.columns(3)
+
+            with col1:
+                case_id_col = st.selectbox(
+                    "Case ID Column:",
+                    options=available_columns if available_columns else [""],
+                    index=(
+                        self._default_index(available_columns, predicted_case_col)
+                        if available_columns
+                        else 0
+                    ),
+                    key="csv_case_id_col",
+                    help="Column with case/trace identifiers",
+                )
+
+            with col2:
+                activity_col = st.selectbox(
+                    "Activity Column:",
+                    options=available_columns if available_columns else [""],
+                    index=(
+                        self._default_index(available_columns, predicted_activity_col)
+                        if available_columns
+                        else 0
+                    ),
+                    key="csv_activity_col",
+                    help="Column with activity names",
+                )
+
+            with col3:
+                timestamp_col = st.selectbox(
+                    "Timestamp Column:",
+                    options=available_columns if available_columns else [""],
+                    index=(
+                        self._default_index(available_columns, predicted_time_col)
+                        if available_columns
+                        else 0
+                    ),
+                    key="csv_timestamp_col",
+                    help="Column with event timestamps",
+                )
+
+            self.controller.handle_csv_to_xes_input_change(
+                csv_file,
+                delimiter_type,
+                delimiter,
+                available_columns,
+            )
+
+            self.controller.handle_csv_to_xes_column_change(
+                {
+                    "case_id_col": case_id_col,
+                    "activity_col": activity_col,
+                    "timestamp_col": timestamp_col,
+                }
+            )
+
+            if not st.session_state.get("converted_xes_ready", False):
+                if st.button(
+                    "Convert to XES",
+                    key="convert_csv_to_xes",
+                    width="stretch",
+                ):
+                    self.controller.convert_csv_to_xes(
+                        csv_file,
+                        delimiter,
+                        case_id_col,
+                        activity_col,
+                        timestamp_col,
+                    )
+                    if st.session_state.get("converted_xes_ready", False):
+                        st.rerun()
+            else:
+                summary = st.session_state.get("converted_xes_summary")
+                xes_bytes = st.session_state.get("converted_xes_bytes")
+                xes_filename = st.session_state.get("converted_xes_filename")
+
+                st.download_button(
+                    label="Download XES File",
+                    data=xes_bytes,
+                    file_name=xes_filename,
+                    mime="application/xml",
+                    key="download_xes_file",
+                    width="stretch",
+                )
+
+                if summary is not None:
+                    summary_text = "Data Summary: \n\n"
+                    for key in summary.keys():
+                        summary_text += f"- {key}: {summary[key]}\n"
+
+                    st.info(summary_text)
+
+                    xes_bytes = st.session_state.get("converted_xes_bytes")
+
+                    if xes_bytes is not None:
+                        xes_text = xes_bytes.decode("utf-8")
+                        lines = xes_text.splitlines()
+                        all_lines = len(lines)
+                        preview_lines = lines[:50]
+
+                        if len(lines) > 50:
+                            preview_lines.append("...")
+                            number_of_lines = 50
+                        else:
+                            number_of_lines = len(preview_lines)
+
+                        xes_preview = "\n".join(preview_lines)
+
+                        st.subheader("Data Preview")
+                        st.write(
+                            f"Showing {number_of_lines} lines out of {all_lines} lines of the generated XES file."
+                        )
+                        st.code(xes_preview, language="xml")
+
+                dropped_rows = st.session_state.get("converted_xes_dropped_rows", 0)
+                if dropped_rows > 0:
+                    st.warning(
+                        f"Removed {dropped_rows} rows with missing values in required columns."
+                    )
+
+    def _default_index(self, options: list[str], preferred: str | None) -> int | None:
+        """Find the index of the first preferred option in a list of available options.
+
+        Parameters
+        ----------
+        options : list[str]
+            The list of available options.
+        preferred : list[str]
+            A list of preferred values ordered by priority.
+
+        Returns
+        -------
+        int | None
+            The index of first matching preferred value or None if no match is found.
+        """
+        if preferred in options:
+            return options.index(preferred)
+        return 0
+
     def display_disclaimer(self):
-        footer("""<div>
+        footer(
+            """<div>
                 <strong>Disclaimer</strong><br>
                 ProcessIntel is hosted and operated as a service by
                 <a href="https://swisdata.eu" target="_blank">SWISDATA</a>.<br>
@@ -256,4 +428,5 @@ class HomeView(BaseView):
                 <a href="https://www.swisdata.eu/contact/" target="_blank">
                     https://www.swisdata.eu/contact/
                 </a>
-            </div>""")
+            </div>"""
+        )
