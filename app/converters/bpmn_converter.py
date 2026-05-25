@@ -19,9 +19,7 @@ class BPMNConverter:
     def build_inductive_graph(data: InductiveBPMNData) -> BPMNGraph:
         """Create the BPMNGraph for an inductive miner."""
         if not data.filtered_events:
-            graph = BPMNGraph(data.filtered_events)
-            graph.add_edge("Start", "End", None)
-            return graph
+            return BPMNConverter._build_empty_graph(data)
 
         return BPMNGraph(
             data.process_tree,
@@ -29,3 +27,11 @@ class BPMNConverter:
             node_sizes=data.node_sizes,
             node_stats_map=data.node_stats_map,
         )
+
+    @staticmethod
+    def _build_empty_graph(data: InductiveBPMNData) -> BPMNGraph:
+        graph = BPMNGraph(data.filtered_events)
+        graph.add_start_node()
+        graph.add_end_node()
+        graph.add_edge("Start", "End", None)
+        return graph
